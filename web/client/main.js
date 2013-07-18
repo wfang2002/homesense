@@ -39,6 +39,12 @@ Template.home.hourlyEvents = function() {
 
 }
 
+Template.home.created = function() {
+    $(window).resize(function(evt) {
+        showHourlyChart();
+    });
+}
+
 Template.home.rendered = function() {
 //    if (!hourlyChart) {
 //        createHourlyChart();

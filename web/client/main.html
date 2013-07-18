@@ -32,12 +32,19 @@
 <template name="home">
     <div id='home-content' class="content" data-role="content">
 
-        <h3>Last 5 Events</h3>
+        <table style="width:100%; background-color: #eee;">
+            <tr>
+                <td>
+                    <h3 style='margin-top: 2px; margin-bottom: 2px'>Last 5 Events</h3>
+                </td>
+            </tr>
+        </table>
+
         <table class='table-stroke'  width="100%">
             <thead>
                 <tr>
                     <th>Station#</th>
-                    <th>Time</th>
+                    <th style="text-align: left">Time</th>
                 </tr>
             </thead>
 
@@ -56,14 +63,13 @@
 
 
 
-        <table style="width:100%">
+        <table style="width:100%; background-color: #eee">
             <tr>
                 <td>
-                    <h3>Hourly Stats.</h3>
+                    <h3  style='margin-top: 2px; margin-bottom: 2px'>Hourly Stats.</h3>
                 </td>
                 <td style="float:right">
                     <div data-role="controlgroup" data-type="horizontal">
-
                         <a id="btn-prev" href="#" data-role="button" data-mini="true">Prev</a>
                         <a id="btn-next" href="#" data-role="button" data-mini="true">Next</a>
                     </div>
