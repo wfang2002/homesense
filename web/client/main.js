@@ -1,9 +1,14 @@
-Meteor.subscribe("motion_sensor_events");
+//Meteor.subscribe("motion_sensor_events");
+Meteor.subscribe("recentEvents");
 
 var hourlyChart;
 var hourlySerialData = [1];
 var hourlyLabel = ["0"];
 var hourlyChartEnd = new Date();
+
+Meteor.startup(function(){
+    $.mobile.orientationChangeEnabled = false;
+});
 
 Template.home.motionEvents = function() {
     return MotionSensorEvents.find({status:'1'}, {sort:{updated:-1}, limit:5});
@@ -46,12 +51,8 @@ Template.home.created = function() {
 }
 
 Template.home.rendered = function() {
-//    if (!hourlyChart) {
-//        createHourlyChart();
-//    } else {
-//        refreshHourlyChart();
-//    }
-    showHourlyChart();
+
+    refreshHourlyChart();
 
     // Force refresh jQuery Mobile elements
     $('#home-content').trigger('create');
@@ -118,6 +119,38 @@ function getHourlyStat(tsStart, tsEnd) {
     return list;
 }
 
+function getHourlyStatAsync(tsStart, tsEnd, callback) {
+
+    console.log("Current hour:", tsEnd.getHours());
+    // Initialize hourly buffer
+    var list = {};
+    for (var ts = tsStart.getTime(); ts <= tsEnd.getTime();) {
+
+        var label;
+        var date = new Date(ts);
+        label = date.format("MMddhh");
+        list[label] = {count:0, ts:ts};
+        ts = ts + 60*60000;
+    }
+
+    // Fill in hourly count
+    //var events = MotionSensorEvents.find({status:"1", updated:{$gte:tsStart, $lt:tsEnd}}, {sort:{updated:-1}}).fetch();
+    Meteor.call('getMotionEvents', tsStart, tsEnd, function(err, events) {
+        _.each(events, function(event) {
+
+            var date = event.updated;
+            var label;
+            label = date.format("MMddhh");
+            list[label].count++;
+
+        });
+
+        console.dir(list);
+
+        if(callback)callback(err, list);
+    })
+}
+
 function createHourlyChart() {
     console.log('create hourly chart');
     hourlyChart = $.jqplot('hourly-chart', [hourlySerialData], {
@@ -171,33 +204,17 @@ function createHourlyChart() {
 
 function refreshHourlyChart() {
     console.log('refresh hourly chart');
-    var now = new Date();
-    var yesterDay = new Date(now.getTime() - 24*60*60000);
-    var hourlyData = getHourlyStat(yesterDay, now);
-
-    hourlySerialData = _.map(hourlyData, function(val){return val.count;});
-    hourlyLabel = _.map(hourlyData, function(val){
-        var date = new Date(val.ts);
-        if (date.getHours() == 0) {
-            return date.format('MM/dd');
-        } else {
-            if (date.getHours() % 2 === 0) {
-                return date.format('hh');
-            } else {
-                return "";
-            }
-        }
-    });
-
-    hourlyChart.series[0].data = hourlySerialData;
-    hourlyChart.replot();
+    var tsStart = new Date(hourlyChartEnd.getTime() - 24*60*60000);
+    getHourlyStatAsync(tsStart, hourlyChartEnd, function(err, hourlyData) {
+        hourlySerialData = hourlyData;
+        showHourlyChart();
+    })
 }
 
 
 function showHourlyChart() {
 
-    var tsStart = new Date(hourlyChartEnd.getTime() - 24*60*60000);
-    var hourlyData = getHourlyStat(tsStart, hourlyChartEnd);
+    var hourlyData = hourlySerialData;
 
     var s1 = _.map(hourlyData, function(val){return val.count;});
     var ticks = _.map(hourlyData, function(val){
@@ -213,12 +230,7 @@ function showHourlyChart() {
         }
     });
 
-//    if (hourlyChart) {
-//        hourlyChart.replot();
-//        return;
-//    }
     $('#hourly-chart').empty();
-
 
     hourlyChart = $.jqplot('hourly-chart', [s1], {
         // The "seriesDefaults" option is an options object that will
