@@ -32,70 +32,74 @@
 <template name="home">
     <div id='home-content' class="content" data-role="content">
 
-        <table style="width:100%; background-color: #eee;">
-            <tr>
-                <td>
-                    <h3 style='margin-top: 2px; margin-bottom: 2px'>Last 5 Events</h3>
-                </td>
-            </tr>
-        </table>
+        <div class="ui-grid-a ui-responsive">
+            <div class="ui-block-a">
+                <table style="width:100%; background-color: #eee;margin-left:1px">
+                    <tr>
+                        <td>
+                            <h3>Last 5 Events</h3>
+                        </td>
+                    </tr>
+                </table>
 
-        <table class='table-stroke'  width="100%">
-            <thead>
-                <tr>
-                    <th>Station#</th>
-                    <th style="text-align: left">Time</th>
-                </tr>
-            </thead>
+                <table class='table-stroke'  width="100%">
+                    <thead>
+                    <tr>
+                        <th>Station#</th>
+                        <th style="text-align: left">Time</th>
+                    </tr>
+                    </thead>
 
-            <tbody>
-            {{#isolate}}
-            {{#each motionEvents }}
-            <tr>
-                <td width="50%" style="text-align: center">{{station_id}}</td>
-                <td width="50%">{{shortTime updated}}</td>
-            </tr>
-            {{/each}}
-            {{/isolate}}
-            </tbody>
+                    <tbody>
+                    {{#isolate}}
+                    {{#each motionEvents }}
+                    <tr>
+                        <td width="50%" style="text-align: center">{{station_id}}</td>
+                        <td width="50%">{{shortTime updated}}</td>
+                    </tr>
+                    {{/each}}
+                    {{/isolate}}
+                    </tbody>
 
-        </table>
+                </table>
+            </div>
+            <div class="ui-block-b">
+                <table style="width:100%; background-color: #eee; margin-left:1px">
+                    <tr>
+                        <td>
+                            <h3>Hourly Stats.</h3>
+                        </td>
+                        <td style="float:right">
+                            <div data-role="controlgroup" data-type="horizontal">
+                                <a id="btn-prev" href="#" data-role="button" data-mini="true">Prev</a>
+                                <a id="btn-next" href="#" data-role="button" data-mini="true">Next</a>
+                            </div>
+                        </td>
+                    </tr>
+                </table>
 
+                <div id="hourly-chart" style="height:200px"></div>
 
+                <table class='table-stroke' width="100%" style="display: none">
+                    <thead>
+                    <tr>
+                        <th width="50%">Hour</th>
+                        <th width="50%">Count</th>
+                    </tr>
+                    </thead>
 
-        <table style="width:100%; background-color: #eee">
-            <tr>
-                <td>
-                    <h3  style='margin-top: 2px; margin-bottom: 2px'>Hourly Stats.</h3>
-                </td>
-                <td style="float:right">
-                    <div data-role="controlgroup" data-type="horizontal">
-                        <a id="btn-prev" href="#" data-role="button" data-mini="true">Prev</a>
-                        <a id="btn-next" href="#" data-role="button" data-mini="true">Next</a>
-                    </div>
-                </td>
-            </tr>
-        </table>
+                    <tbody>
+                    {{#each hourlyEvents }}
+                    <tr>
+                        <td>{{hour}}</td>
+                        <td style="text-align: center">{{count}}</td>
+                    </tr>
+                    {{/each}}
+                    </tbody>
 
-        <div id="hourly-chart" style="height:200px"></div>
+                </table>
 
-        <table class='table-stroke' width="100%" style="display: none">
-            <thead>
-            <tr>
-                <th width="50%">Hour</th>
-                <th width="50%">Count</th>
-            </tr>
-            </thead>
-
-            <tbody>
-            {{#each hourlyEvents }}
-            <tr>
-                <td>{{hour}}</td>
-                <td style="text-align: center">{{count}}</td>
-            </tr>
-            {{/each}}
-            </tbody>
-
-        </table>
+            </div>
+        </div>
     </div>
 </template>
