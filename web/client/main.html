@@ -30,7 +30,7 @@
 </template>
 
 <template name="home">
-    <div class="content" data-role="content">
+    <div id='home-content' class="content" data-role="content">
 
         <h3>Last 5 Events</h3>
         <table class='table-stroke'  width="100%">
@@ -54,8 +54,24 @@
 
         </table>
 
-        <h3>Hourly Stats.</h3>
-        <div id="hourly-chart"></div>
+
+
+        <table style="width:100%">
+            <tr>
+                <td>
+                    <h3>Hourly Stats.</h3>
+                </td>
+                <td style="float:right">
+                    <div data-role="controlgroup" data-type="horizontal">
+
+                        <a id="btn-prev" href="#" data-role="button" data-mini="true">Prev</a>
+                        <a id="btn-next" href="#" data-role="button" data-mini="true">Next</a>
+                    </div>
+                </td>
+            </tr>
+        </table>
+
+        <div id="hourly-chart" style="height:200px"></div>
 
         <table class='table-stroke' width="100%" style="display: none">
             <thead>
