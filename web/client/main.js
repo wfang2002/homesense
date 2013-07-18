@@ -1,6 +1,7 @@
 //Meteor.subscribe("motion_sensor_events");
 Meteor.subscribe("recentEvents");
 
+var liveChart  = true;
 var hourlyChart;
 var hourlySerialData = [1];
 var hourlyLabel = ["0"];
@@ -52,6 +53,10 @@ Template.home.created = function() {
 
 Template.home.rendered = function() {
 
+    if (liveChart) {
+        hourlyChartEnd = new Date();
+    }
+
     refreshHourlyChart();
 
     // Force refresh jQuery Mobile elements
@@ -64,22 +69,28 @@ Template.home.events({
         evt.stopPropagation();
         evt.preventDefault();
 
+        console.log("show prev day chart");
         var now = new Date();
         var next = hourlyChartEnd.getTime() - 24*60*60000;
         if (next > now.getTime()) next = now.getTime;
+        liveChart = false;
         hourlyChartEnd = new Date(next);
-        showHourlyChart();
+        refreshHourlyChart();
     },
 
     'click #btn-next':function(evt, tmpl) {
         evt.stopPropagation();
         evt.preventDefault();
 
+        console.log("show next day chart");
         var now = new Date();
         var next = hourlyChartEnd.getTime() + 24*60*60000;
-        if (next > now.getTime()) next = now.getTime();
+        if (next > now.getTime()) {
+            next = now.getTime();
+            liveChart = true;
+        }
         hourlyChartEnd = new Date(next);
-        showHourlyChart();
+        refreshHourlyChart();
     }
 })
 
@@ -88,36 +99,6 @@ Template.home.helpers({
         return shortTime(time);
     }
 })
-
-function getHourlyStat(tsStart, tsEnd) {
-
-    console.log("Current hour:", tsEnd.getHours());
-    // Initialize hourly buffer
-    var list = {};
-    for (var ts = tsStart.getTime(); ts <= tsEnd.getTime();) {
-
-        var label;
-        var date = new Date(ts);
-        label = date.format("MMddhh");
-        list[label] = {count:0, ts:ts};
-        ts = ts + 60*60000;
-    }
-
-    // Fill in hourly count
-    var events = MotionSensorEvents.find({status:"1", updated:{$gte:tsStart, $lt:tsEnd}}, {sort:{updated:-1}}).fetch();
-    _.each(events, function(event) {
-
-        var date = event.updated;
-        var label;
-        label = date.format("MMddhh");
-        list[label].count++;
-
-    });
-
-    console.dir(list);
-
-    return list;
-}
 
 function getHourlyStatAsync(tsStart, tsEnd, callback) {
 
@@ -145,62 +126,12 @@ function getHourlyStatAsync(tsStart, tsEnd, callback) {
 
         });
 
-        console.dir(list);
+        //console.dir(list);
 
         if(callback)callback(err, list);
     })
 }
 
-function createHourlyChart() {
-    console.log('create hourly chart');
-    hourlyChart = $.jqplot('hourly-chart', [hourlySerialData], {
-        // The "seriesDefaults" option is an options object that will
-        // be applied to all series in the chart.
-        seriesDefaults:{
-            renderer:$.jqplot.BarRenderer,
-            rendererOptions: {
-                barMargin: 2,
-                fillToZero: true
-            }
-        },
-        // Custom labels for the series are specified with the "label"
-        // option on the series option.  Here a series option object
-        // is specified for each series.
-        series:[
-            {label:'Event Count'}
-        ],
-        // Show the legend and put it outside the grid, but inside the
-        // plot container, shrinking the grid to accomodate the legend.
-        // A value of "outside" would not shrink the grid and allow
-        // the legend to overflow the container.
-        legend: {
-            show: true,
-            placement: 'insideGrid'
-        },
-        axes: {
-            // Use a category axis on the x axis and use our custom ticks.
-            xaxis: {
-                renderer: $.jqplot.CategoryAxisRenderer,
-                ticks: hourlyLabel
-            },
-            // Pad the y axis just a little so bars can get close to, but
-            // not touch, the grid boundaries.  1.2 is the default padding.
-            yaxis: {
-                //pad: 1.05,
-                padMin: 0,
-                tickOptions: {formatString: '%d'}
-            }
-        } ,
-
-        axesDefaults: {
-            tickOptions: {
-                showGridline: false
-            }
-
-        }
-    });
-
-}
 
 function refreshHourlyChart() {
     console.log('refresh hourly chart');
