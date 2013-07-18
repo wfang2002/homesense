@@ -27,12 +27,16 @@ Template.home.hourlyEvents = function() {
         else {
             list[time] = {hour:time, count:1};
         }
-        console.log('list[%s]=%s', time, list[time]);
+        //console.log('list[%s]=%s', time, list[time]);
 
     });
 
-    return _.map(list, function(val, key){return val});
+    return _.first(_.map(list, function(val, key){return val}), 12);
 
+}
+
+Template.home.rendered = function() {
+    showHourlyChart();
 }
 
 Template.home.helpers({
@@ -40,3 +44,101 @@ Template.home.helpers({
         return shortTime(time);
     }
 })
+
+function getHourlyStat(tsStart, tsEnd) {
+
+    console.log("Current hour:", tsEnd.getHours());
+    // Initialize hourly buffer
+    var list = {};
+    for (var ts = tsStart.getTime(); ts <= tsEnd.getTime();) {
+
+        var label;
+        var date = new Date(ts);
+        label = date.format("MMddhh");
+        list[label] = {count:0, ts:ts};
+        ts = ts + 60*60000;
+    }
+
+    // Fill in hourly count
+    var events = MotionSensorEvents.find({status:"1", updated:{$gte:tsStart, $lt:tsEnd}}, {sort:{updated:-1}}).fetch();
+    _.each(events, function(event) {
+
+        var date = event.updated;
+        var label;
+        label = date.format("MMddhh");
+        list[label].count++;
+
+    });
+
+    console.dir(list);
+
+    return list;
+}
+
+function showHourlyChart() {
+
+    var now = new Date();
+    var yesterDay = new Date(now.getTime() - 24*60*60000);
+    var hourlyData = getHourlyStat(yesterDay, now);
+
+    var s1 = _.map(hourlyData, function(val){return val.count;});
+    var ticks = _.map(hourlyData, function(val){
+        var date = new Date(val.ts);
+        if (date.getHours() == 0) {
+            return date.format('MM/dd');
+        } else {
+            if (date.getHours() % 2 === 0) {
+                return date.format('hh');
+            } else {
+                return "";
+            }
+        }
+    });
+
+    var plot1 = $.jqplot('hourly-chart', [s1], {
+        // The "seriesDefaults" option is an options object that will
+        // be applied to all series in the chart.
+        seriesDefaults:{
+            renderer:$.jqplot.BarRenderer,
+            rendererOptions: {
+                barMargin: 2,
+                fillToZero: true
+            }
+        },
+        // Custom labels for the series are specified with the "label"
+        // option on the series option.  Here a series option object
+        // is specified for each series.
+        series:[
+            {label:'Event Count'}
+        ],
+        // Show the legend and put it outside the grid, but inside the
+        // plot container, shrinking the grid to accomodate the legend.
+        // A value of "outside" would not shrink the grid and allow
+        // the legend to overflow the container.
+        legend: {
+            show: true,
+            placement: 'insideGrid'
+        },
+        axes: {
+            // Use a category axis on the x axis and use our custom ticks.
+            xaxis: {
+                renderer: $.jqplot.CategoryAxisRenderer,
+                ticks: ticks
+            },
+            // Pad the y axis just a little so bars can get close to, but
+            // not touch, the grid boundaries.  1.2 is the default padding.
+            yaxis: {
+                //pad: 1.05,
+                padMin: 0,
+                tickOptions: {formatString: '%d'}
+            }
+        } ,
+
+        axesDefaults: {
+            tickOptions: {
+                showGridline: false
+            }
+
+        }
+    });
+}
