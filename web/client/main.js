@@ -1,10 +1,9 @@
 //Meteor.subscribe("motion_sensor_events");
 Meteor.subscribe("recentEvents");
 
-var liveChart  = true;
-var hourlyChart;
-var hourlySerialData = [1];
-var hourlyLabel = ["0"];
+var liveChart  = true;      // if true then each refresh will adjust data end time to current time.
+var hourlyChart;    // jqPlot handle
+var hourlySerialData = []; //data
 var hourlyChartEnd = new Date();
 
 Meteor.startup(function(){
@@ -46,6 +45,7 @@ Template.home.hourlyEvents = function() {
 }
 
 Template.home.created = function() {
+    hourlyChart = null;
     $(window).resize(function(evt) {
         showHourlyChart();
     });
@@ -147,7 +147,10 @@ function showHourlyChart() {
 
     var hourlyData = hourlySerialData;
 
-    var s1 = _.map(hourlyData, function(val){return val.count;});
+    var idx = 0;
+    // series data
+    var s1 = _.map(hourlyData, function(val){return [idx++, val.count];});
+    // x-axis label
     var ticks = _.map(hourlyData, function(val){
         var date = new Date(val.ts);
         if (date.getHours() == 0) {
@@ -161,9 +164,7 @@ function showHourlyChart() {
         }
     });
 
-    $('#hourly-chart').empty();
-
-    hourlyChart = $.jqplot('hourly-chart', [s1], {
+    var options = {
         // The "seriesDefaults" option is an options object that will
         // be applied to all series in the chart.
         seriesDefaults:{
@@ -208,5 +209,17 @@ function showHourlyChart() {
             }
 
         }
-    });
+    };
+
+    // Replot chart if already initialized
+    if (hourlyChart) {
+        console.log("replot chart");
+        options.data = [s1];
+        hourlyChart.replot(options);
+        return;
+    }
+
+    console.log("Initial drawing chart. shall call only once.");
+    $('#hourly-chart').empty();
+    hourlyChart = $.jqplot('hourly-chart', [s1], options);
 }
