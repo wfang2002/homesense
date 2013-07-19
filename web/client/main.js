@@ -27,7 +27,7 @@ Template.home.location = function() {
     var event = this;
     // TODO: get location name from db
     if (event.station_id == '0') {
-        return 'Living Room';
+        return 'Family Room';
     } else {
         return event.station_id;
     }
