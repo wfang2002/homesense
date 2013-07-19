@@ -149,7 +149,7 @@ function showHourlyChart() {
 
     var idx = 0;
     // series data
-    var s1 = _.map(hourlyData, function(val){return [idx++, val.count];});
+    var s1 = _.map(hourlyData, function(val){return val.count;});
     // x-axis label
     var ticks = _.map(hourlyData, function(val){
         var date = new Date(val.ts);
@@ -210,6 +210,8 @@ function showHourlyChart() {
 
         }
     };
+
+    console.dir(s1);
 
     // Replot chart if already initialized
     if (hourlyChart) {
