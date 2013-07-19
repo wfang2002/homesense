@@ -56,8 +56,9 @@ var last_status = '0';
 sp.on('data', function(data){
     var status = data.toString();
     status = status.replace('\r\n', '');
-    console.log('data received:' + data);
+    //console.log('data received:' + data);
     if (status != last_status && ddp_connected) {
+    		console.log('status changed to: ', status);
         last_status = status;
         ddpclient.call('updateMotionSensorEvent', [{station_id:'0', status:status, updated:new Date()}]);
     }
