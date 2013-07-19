@@ -23,6 +23,16 @@ Template.home.status = function() {
     }
 }
 
+Template.home.location = function() {
+    var event = this;
+    // TODO: get location name from db
+    if (event.station_id == '0') {
+        return 'Living Room';
+    } else {
+        return event.station_id;
+    }
+}
+
 Template.home.hourlyEvents = function() {
 
     var events = MotionSensorEvents.find({status:"1"}, {sort:{updated:-1}, limit:200}).fetch();
@@ -217,7 +227,7 @@ function showHourlyChart() {
         }
     };
 
-    console.dir(s1);
+    //console.dir(s1);
 
     // Replot chart if already initialized
     if (hourlyChart) {
