@@ -103,6 +103,12 @@ Template.home.helpers({
 function getHourlyStatAsync(tsStart, tsEnd, callback) {
 
     console.log("Current hour:", tsEnd.getHours());
+
+    tsStart.setMinutes(0);
+    tsStart.setSeconds(0);
+    tsEnd.setMinutes(59);
+    tsEnd.setSeconds(59);
+
     // Initialize hourly buffer
     var list = {};
     for (var ts = tsStart.getTime(); ts <= tsEnd.getTime();) {
