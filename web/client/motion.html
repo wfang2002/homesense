@@ -6,7 +6,7 @@
                 <table style="width:100%; background-color: #eee;margin-left:1px">
                     <tr>
                         <td>
-                            <h3>Last 5 Events</h3>
+                            <h3>Recent Events</h3>
                         </td>
                     </tr>
                 </table>
@@ -15,7 +15,8 @@
                     <thead>
                     <tr>
                         <th width="25%">Time</th>
-                        <th>Location</th>
+                        <th width="50%">Location</th>
+                        <th width="25%">Type</th>
                     </tr>
                     </thead>
 
@@ -23,8 +24,9 @@
                     {{#isolate}}
                     {{#each motionEvents }}
                     <tr>
-                        <td width="25%" style="text-align: center">{{shortTime updated}}</td>
-                        <td width="50%" style="text-align: center">{{location}}</td>
+                        <td style="text-align: center">{{shortTime updated}}</td>
+                        <td style="text-align: center">{{location}}</td>
+                        <td>Motion</td>
                     </tr>
                     {{/each}}
                     {{/isolate}}
@@ -36,7 +38,7 @@
                 <table style="width:100%; background-color: #eee; margin-left:1px">
                     <tr>
                         <td>
-                            <h3>Hourly Stats.</h3>
+                            <h3>Event History</h3>
                         </td>
                         <td style="float:right">
                             <div data-role="controlgroup" data-type="horizontal">

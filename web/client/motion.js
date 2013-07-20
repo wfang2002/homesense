@@ -187,7 +187,7 @@ function showHourlyChart() {
         // option on the series option.  Here a series option object
         // is specified for each series.
         series:[
-            {label:'Event Count'}
+            {label:'Motion'}
         ],
         // Show the legend and put it outside the grid, but inside the
         // plot container, shrinking the grid to accomodate the legend.

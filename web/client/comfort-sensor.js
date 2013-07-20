@@ -176,11 +176,10 @@ function showHourlyChart() {
         // The "seriesDefaults" option is an options object that will
         // be applied to all series in the chart.
         seriesDefaults:{
-            renderer:$.jqplot.BezierCurveRenderer,
+            //renderer:$.jqplot.BezierCurveRenderer,
             showMarker:false,
             rendererOptions: {
-                barMargin: 2,
-                fillToZero: true
+                smooth: true
             }
         },
         // Custom labels for the series are specified with the "label"
@@ -212,12 +211,19 @@ function showHourlyChart() {
                 padMin: 0,
                 tickOptions: {
                     showGridline: true,
-                    formatString: '%d'
-                }
+                    formatString: '%d°C'
+                },
+                min:10,
+                max:40
             },
 
             y2axis: {
-                autoscale:true
+                padMin: 0,
+                min:40,
+                max:70,
+                tickOptions: {
+                    formatString: '%d%%'
+                }
             }
         } ,
 
