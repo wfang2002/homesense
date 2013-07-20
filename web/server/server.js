@@ -19,7 +19,23 @@ Meteor.startup(function () {
         }
     }
 
-    //sendMessage("wei.fang@bchydro.com", {subject:"server booted", content:"Server Url: " + Meteor.absoluteUrl()})
+    var val = ComfortSensorData.findOne();
+    if (!val) {
+        // insert dummy data for testing
+        var now = new Date();
+        var yesterday = new Date(now.getFullYear(), now.getMonth(), now.getDate() - 1);
+        for (var i=0; i < 200; i++) {
+            var rHour = Math.random()*24;
+            var rMinute = Math.random()*60;
+            var rSec = Math.random()*60;
+            var ts = new Date(now.getFullYear(), now.getMonth(), now.getDate(), now.getHours() - rHour, rMinute, rSec);
+            var tmp = 20.0 + Math.random()*15.0;
+            var hum = 30.0 + Math.random()*50.0;
+            ComfortSensorData.insert({station_id:'0', type:'t', data:tmp, updated:ts});
+            ComfortSensorData.insert({station_id:'0', type:'h', data:hum, updated:ts});
+        }
+    }
+
 });
 
 Meteor.methods({
@@ -57,6 +73,14 @@ Meteor.methods({
     getMotionEvents: function(tsStart, tsEnd) {
         var events = MotionSensorEvents.find({status:"1", updated:{$gte:tsStart, $lt:tsEnd}}, {sort:{updated:-1}}).fetch();
         console.log('Found %s events.', events.length);
+        return events;
+    },
+
+    getComfortData: function(tsStart, tsEnd, type) {
+        var condition = {updated:{$gte:tsStart, $lt:tsEnd}};
+        if (type) condition.type = type;
+        var events = ComfortSensorData.find(condition, {sort:{updated:-1}}).fetch();
+        console.log('Found %s comfort data.', events.length);
         return events;
     }
 })

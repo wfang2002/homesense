@@ -1,5 +1,5 @@
 <head>
-    <title>alwynmobi</title>
+    <title>Sweet Home</title>
     <meta name="viewport" content="width=device-width, initial-scale=1, maximum-scale=1.0, user-scalable=no">
     <link rel="apple-touch-icon" href="/smarthome.jpg" />
     <link rel="apple-touch-startup-image" href="/smarthome.jpg" />
@@ -8,103 +8,31 @@
     <script type="text/javascript" src="/js/jquery/jquery.mobile-1.3.0.min.js"></script>
     <script type="text/javascript" src="/js/jqplot/jquery.jqplot.min.js"></script>
     <script type="text/javascript" src="/js/jqplot/plugins/jqplot.barRenderer.min.js"></script>
+    <script type="text/javascript" src="/js/jqplot/plugins/jqplot.BezierCurveRenderer.min"></script>
     <script type="text/javascript" src="/js/jqplot/plugins/jqplot.categoryAxisRenderer.min.js"></script>
     <script type="text/javascript" src="/js/jqplot/plugins/jqplot.pointLabels.min.js"></script>
     <link rel="stylesheet" type="text/css" href="/js/jqplot/jquery.jqplot.css" />
 </head>
 
 <body>
-<div class="page" data-role="page" id="home" data-theme="">
 
+
+<div class="page" data-role="page" id="motion" data-theme="">
     {{> header}}
-    {{> home}}
+    {{> motion}}
 </div>
+
 </body>
 
 <template name="header">
     <div class="header" data-role="header">
-        <h1>Motion Events</h1>
+        <h1>Sweet Home</h1>
         <div id="s-Application_bar" class="richtext" style="text-align: center">
             <div>
-                <div class="valign"><span id="rtr-s-Application_bar_0"></span></div>
+                <div class="valign"><span ></span></div>
             </div>
         </div>
     </div>
 </template>
 
-<template name="home">
-    <div id='home-content' class="content" data-role="content">
 
-        <div class="ui-grid-a ui-responsive">
-            <div class="ui-block-a">
-                <table style="width:100%; background-color: #eee;margin-left:1px">
-                    <tr>
-                        <td>
-                            <h3>Last 5 Events</h3>
-                        </td>
-                    </tr>
-                </table>
-
-                <table class='table-stroke'  width="100%">
-                    <thead>
-                    <tr>
-                        <th width="25%">Time</th>
-                        <th>Location</th>
-                    </tr>
-                    </thead>
-
-                    <tbody>
-                    {{#isolate}}
-                    {{#each motionEvents }}
-                    <tr>
-                        <td width="25%" style="text-align: center">{{shortTime updated}}</td>
-                        <td width="50%" style="text-align: center">{{location}}</td>
-                    </tr>
-                    {{/each}}
-                    {{/isolate}}
-                    </tbody>
-
-                </table>
-            </div>
-            <div class="ui-block-b">
-                <table style="width:100%; background-color: #eee; margin-left:1px">
-                    <tr>
-                        <td>
-                            <h3>Hourly Stats.</h3>
-                        </td>
-                        <td style="float:right">
-                            <div data-role="controlgroup" data-type="horizontal">
-                                <a id="btn-prev" href="#" data-role="button" data-mini="true">Prev</a>
-                                <a id="btn-next" href="#" data-role="button" data-mini="true">Next</a>
-                            </div>
-                        </td>
-                    </tr>
-                </table>
-
-                {{#constant}}
-                <div id="hourly-chart" style="height:200px;width:100%"></div>
-                {{/constant}}
-
-                <table class='table-stroke' width="100%" style="display: none">
-                    <thead>
-                    <tr>
-                        <th width="50%">Hour</th>
-                        <th width="50%">Count</th>
-                    </tr>
-                    </thead>
-
-                    <tbody>
-                    {{#each hourlyEvents }}
-                    <tr>
-                        <td>{{hour}}</td>
-                        <td style="text-align: center">{{count}}</td>
-                    </tr>
-                    {{/each}}
-                    </tbody>
-
-                </table>
-
-            </div>
-        </div>
-    </div>
-</template>
