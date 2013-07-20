@@ -177,9 +177,13 @@ function showHourlyChart() {
 //    vertLinePos.setMilliseconds(0);
 
     // x-axis label
+    var vertPos = 0;
+    var idx = 0;
     var ticks = _.map(hourlyData, function(val){
+        idx++;
         var date = new Date(val.ts);
         if (date.getHours() == 0 && date.getMinutes() == 0) {
+            vertPos = idx;
             return date.format('M/dd');
         } else {
             if (date.getHours() % 2 === 0 && date.getMinutes() == 0) {
@@ -255,28 +259,20 @@ function showHourlyChart() {
                 showGridline: false
             }
 
-//        },
-//
-//        canvasOverlay: {
-//            show: true,
-//            objects: [
-//                {dashedVerticalLine: {
-//                    name: 'barney',
-//                    x: new Date('2013-07-20 02:00:00').getTime(),
-//                    lineWidth: 2,
-//                    color: 'rgb(100, 55, 124)',
-//                    shadow: false
-//                }},
-//                {horizontalLine: {
-//                    name: 'pebbles',
-//                    y: 25,
-//                    lineWidth: 3,
-//                    color: 'rgb(100, 55, 124)',
-//                    shadow: true,
-//                    lineCap: 'butt',
-//                    xOffset: 0
-//                }}
-//            ]
+        },
+
+        canvasOverlay: {
+            show: true,
+            objects: [
+                {dashedVerticalLine: {
+                    name: 'dateline',
+                    x: vertPos,
+                    lineWidth: 1,
+                    yOffset: 0,
+                    color: 'rgb(133, 120, 24)',
+                    shadow: false
+                }}
+            ]
         }
     };
 
