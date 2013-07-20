@@ -79,12 +79,15 @@ sp.on('data', function(data){
         }
 
     } else if (cmd == 'SHT') {
-        if (fields.length != 2) {
+    	console.log("received: %s", status);
+
+        var temperature = parseFloat(fields[1]);
+        var humidity = parseFloat(fields[2]);
+        
+        if (isNaN(temperature) || isNaN(humidity)) {
             querySHT11();   // Retry
             return;
         }
-        var temperature = parseFloat(fields[1]);
-        var humidity = parseFloat(fields[2]);
         console.log("Temperature: %s, Humidity: %s", temperature, humidity);
         ddpclient.call('updateTemperatureSensorData', [{station_id:'0', data:temperature, updated:new Date()}]);
         ddpclient.call('updateHumiditySensorData', [{station_id:'0', data:humidity, updated:new Date()}]);
