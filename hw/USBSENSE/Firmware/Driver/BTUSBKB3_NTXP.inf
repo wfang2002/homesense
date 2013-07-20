@@ -1,0 +1,47 @@
+[Version]
+Signature="$Windows NT$"
+Class=Ports
+ClassGuid={4D36E978-E325-11CE-BFC1-08002BE10318}
+Provider=%NOKIA%
+LayoutFile=layout.inf
+
+[Manufacturer]
+%NOKIA%=NOKIA
+
+[NOKIA]
+%NOKIA_CDC%=USBKB3, USB\VID_4657&PID_4B47
+
+[USBKB3_Install.NTx86]
+;Windows2000
+
+[DestinationDirs]
+DefaultDestDir=12
+USBKB3.NT.Copy=12
+
+[USBKB3.NT]
+CopyFiles=USBKB3.NT.Copy
+AddReg=USBKB3.NT.AddReg
+
+[USBKB3.NT.Copy]
+usbser.sys
+
+[USBKB3.NT.AddReg]
+HKR,,DevLoader,,*ntkern
+HKR,,NTMPDriver,,usbser.sys
+HKR,,EnumPropPages32,,"MsPorts.dll,SerialPortPropPageProvider"
+
+[USBKB3.NT.Services]
+AddService = usbser, 0x00000002, Service_Inst
+
+[Service_Inst]
+DisplayName = %Serial.SvcDesc%
+ServiceType = 1 ; SERVICE_KERNEL_DRIVER
+StartType = 3 ; SERVICE_DEMAND_START
+ErrorControl = 1 ; SERVICE_ERROR_NORMAL
+ServiceBinary = %12%\usbser.sys
+LoadOrderGroup = Base
+
+[Strings]
+NOKIA = "Nokia Vancouver"
+NOKIA_CDC = "BTUSBKB3"
+Serial.SvcDesc = "BlackTusk USB Input Device Controller"
