@@ -48,6 +48,8 @@ var sp = new SerialPort(argv.comport, {baudrate:38400});
 sp.on("open", function(err) {
     console.log('port opened');
 
+    querySHT11();
+
     var i = 0;
     setInterval(function() {
         if (++i == 5*60) {  // query temperature/humidity every 5 minute
