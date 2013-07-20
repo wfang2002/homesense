@@ -89,8 +89,7 @@ sp.on('data', function(data){
             return;
         }
         console.log("Temperature: %s, Humidity: %s", temperature, humidity);
-        ddpclient.call('updateTemperatureSensorData', [{station_id:'0', data:temperature, updated:new Date()}]);
-        ddpclient.call('updateHumiditySensorData', [{station_id:'0', data:humidity, updated:new Date()}]);
+        ddpclient.call('updateComfortSensorData', [{station_id:'0', data:{t:temperature, h:humidity}, updated:new Date()}]);
     }
 
 

@@ -30,11 +30,11 @@ Meteor.startup(function () {
             var rSec = Math.random()*60;
             var ts = new Date(now.getFullYear(), now.getMonth(), now.getDate(), now.getHours() - rHour, rMinute, rSec);
             var tmp = 20.0 + Math.random()*15.0;
-            var hum = 30.0 + Math.random()*50.0;
-            ComfortSensorData.insert({station_id:'0', type:'t', data:tmp, updated:ts});
-            ComfortSensorData.insert({station_id:'0', type:'h', data:hum, updated:ts});
+            var hum = 40.0 + Math.random()*30.0;
+            ComfortSensorData.insert({station_id:'0', data:{t:tmp, h:hum}, updated:ts});
         }
     }
+
 
 });
 
@@ -59,6 +59,7 @@ Meteor.methods({
         details.type = 't'; // type: temperature
         ComfortSensorData.insert(details);
     },
+
     updateHumiditySensorData: function(details) {
         console.log("updateHumiditySensorData called: %j", details);
         if (!details || details.length === 0) {
@@ -67,6 +68,16 @@ Meteor.methods({
 
         details.updated = new Date();
         details.type = 'h';     // type: humidity
+        ComfortSensorData.insert(details);
+    },
+
+    updateComfortSensorData: function(details) {
+        console.log("updateComfortSensorData called: %j", details);
+        if (!details || details.length === 0) {
+            return;
+        }
+
+        details.updated = new Date();
         ComfortSensorData.insert(details);
     },
 

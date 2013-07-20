@@ -163,7 +163,7 @@ function showHourlyChart() {
     var ticks = _.map(hourlyData, function(val){
         var date = new Date(val.ts);
         if (date.getHours() == 0) {
-            return date.format('MM/dd');
+            return date.format('M/dd');
         } else {
             if (date.getHours() % 2 === 0) {
                 return date.format('hh');

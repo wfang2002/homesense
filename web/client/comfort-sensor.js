@@ -99,8 +99,9 @@ function getHourlyStatAsync(tsStart, tsEnd, callback) {
 
     tsStart.setMinutes(0);
     tsStart.setSeconds(0);
+    tsStart.setMilliseconds(0);
 
-    var interval = 10; //minutes
+    var interval = 20; //minutes
 
     // Initialize hourly buffer
     var list = {};
@@ -123,10 +124,17 @@ function getHourlyStatAsync(tsStart, tsEnd, callback) {
             date.setMinutes(parseInt(date.getMinutes()/interval)*interval);
             label = date.format("MMddhhmm");
             //console.dir(val);
+
+
+            // integrated new data
+            if (val.data && val.data.t)list[label].temperature = val.data.t;
+            if (val.data && val.data.h)list[label].humidity = val.data.h;
+
+            // backward compatibility
             if (val.type === 't') {
                 //console.log("%s temperature: ",label, val.data);
                 list[label].temperature = val.data;
-            } else {
+            } else if (val.type === 'h') {
                 //console.log("%s Humidity: ",label, val.data);
                 list[label].humidity = val.data;
             }
@@ -158,11 +166,21 @@ function showHourlyChart() {
     // series data
     var s1 = _.map(hourlyData, function(val){return val.temperature;});
     var s2 = _.map(hourlyData, function(val){return val.humidity;});
+
+    //var tsStart = s1[50][0];
+    //var vertLinePos = tsStart;
+    //console.log('tsStart = %s', tsStart);
+//    var vertLinePos = new Date(tsStart);
+//    vertLinePos.setDate(vertLinePos.getDate() + 1);
+//    vertLinePos.setHours(0);
+//    vertLinePos.setMinutes(0);
+//    vertLinePos.setMilliseconds(0);
+
     // x-axis label
     var ticks = _.map(hourlyData, function(val){
         var date = new Date(val.ts);
         if (date.getHours() == 0 && date.getMinutes() == 0) {
-            return date.format('MM/dd');
+            return date.format('M/dd');
         } else {
             if (date.getHours() % 2 === 0 && date.getMinutes() == 0) {
                 return date.format('hh');
@@ -204,6 +222,11 @@ function showHourlyChart() {
                 renderer: $.jqplot.CategoryAxisRenderer,
                 ticks: ticks
             },
+//            xaxis: {
+//                renderer: $.jqplot.DateAxisRenderer,
+//                tickOptions:{formatString: '%H'},
+//                tickInterval: '2 hours'
+//            },
             // Pad the y axis just a little so bars can get close to, but
             // not touch, the grid boundaries.  1.2 is the default padding.
             yaxis: {
@@ -232,6 +255,28 @@ function showHourlyChart() {
                 showGridline: false
             }
 
+//        },
+//
+//        canvasOverlay: {
+//            show: true,
+//            objects: [
+//                {dashedVerticalLine: {
+//                    name: 'barney',
+//                    x: new Date('2013-07-20 02:00:00').getTime(),
+//                    lineWidth: 2,
+//                    color: 'rgb(100, 55, 124)',
+//                    shadow: false
+//                }},
+//                {horizontalLine: {
+//                    name: 'pebbles',
+//                    y: 25,
+//                    lineWidth: 3,
+//                    color: 'rgb(100, 55, 124)',
+//                    shadow: true,
+//                    lineCap: 'butt',
+//                    xOffset: 0
+//                }}
+//            ]
         }
     };
 
