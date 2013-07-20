@@ -33,6 +33,27 @@ Meteor.methods({
         MotionSensorEvents.insert(details);
     },
 
+    updateTemperatureSensorData: function(details) {
+        console.log("updateTemperatureSensorData called: %j", details);
+        if (!details || details.length === 0) {
+            return;
+        }
+
+        details.updated = new Date();
+        details.type = 't'; // type: temperature
+        ComfortSensorData.insert(details);
+    },
+    updateHumiditySensorData: function(details) {
+        console.log("updateHumiditySensorData called: %j", details);
+        if (!details || details.length === 0) {
+            return;
+        }
+
+        details.updated = new Date();
+        details.type = 'h';     // type: humidity
+        ComfortSensorData.insert(details);
+    },
+
     getMotionEvents: function(tsStart, tsEnd) {
         var events = MotionSensorEvents.find({status:"1", updated:{$gte:tsStart, $lt:tsEnd}}, {sort:{updated:-1}}).fetch();
         console.log('Found %s events.', events.length);

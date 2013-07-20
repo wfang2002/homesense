@@ -17,6 +17,8 @@
 #include "..\share\usb_cdc.h"
 #include <stdlib.h>
 
+#include "sht11.c"
+
 #define PIN_LED PIN_C2
 #define PIN_DUT_PWR	PIN_C1
 #define PIN_RST	PIN_B3
@@ -78,6 +80,7 @@ enum{
 	CMD_IOL,	//Set IO pin low
 	CMD_IOH,	//Set IO pin high
 	CMD_INP,	//input IO pin status (1: High, 0:Low)
+	CMD_SHT,    //Read SHT11 sensor
 	CMD_REG,	//Show register value
 	CMD_SIM,	//SIM Card switch
 	CMD_USB,	//USB port switch
@@ -104,6 +107,7 @@ const char sCmdStrings[CMD_NUM][4] =
 	"IOL",
 	"IOH",
 	"INP",
+	"SHT",
 	"REG",
 	"SIM",
 	"USB",
@@ -252,6 +256,27 @@ void TIMER3_isr()
 	}
 	else
 		nLIS302SampleTimer = 10;	//100Hz
+}
+
+float fSHT11_T, fSHT11_H, fSHT11_HC;   //Humidity&Temperature
+
+void ReadHumidity()
+{
+      long tmp;
+
+		tmp = SHT11_Measure(0);
+		fSHT11_T = tmp;
+		fSHT11_T = fSHT11_T/100.0-40.0;
+
+
+		tmp = SHT11_Measure(1);
+		fSHT11_H = tmp;
+
+		//Calculate temperature compensation
+		fSHT11_HC = (fSHT11_t-25.0)*(0.01 + 0.00008*fSHT11_H);
+		//RH(linear) =  C1 + C2*SOrh + C3*SOrh*SOrh
+		fSHT11_H = -4.0 + 0.0405*fSHT11_H  - 2.8*fSHT11_H*fSHT11_H/1000000.0;
+		fSHT11_H += fSHT11_HC;
 }
 
 #define ADG2128_ADDRESS 0xE0
@@ -1066,11 +1091,11 @@ void ParseCommand()
 		ResetADG2128();
 		ResetPCA9535();
 
-		printf(usb_cdc_putc, "Ok\r\n");
+		printf(usb_cdc_putc, "RST Ok\r\n");
 	}
 	else if(nCmdCode == CMD_VER)	//get version
 	{
-		printf(usb_cdc_putc, "%s\r\n", sVersion);
+		printf(usb_cdc_putc, "VER %s\r\n", sVersion);
 	}
 	else if(nCmdCode == CMD_PGM)	//Enter program (sw update) mode
 	{
@@ -1081,17 +1106,17 @@ void ParseCommand()
 	else if(nCmdCode == CMD_SWO)	//Switch open
 	{
 		SetSwitch(sCommand+CMD_FIX_LEN+1, 0);
-		printf(usb_cdc_putc, "Ok\r\n");	
+		printf(usb_cdc_putc, "SWO Ok\r\n");
 	}
 	else if(nCmdCode == CMD_SWC)	//Switch close
 	{
 		SetSwitch(sCommand+CMD_FIX_LEN+1, 1);
-		printf(usb_cdc_putc, "Ok\r\n");	
+		printf(usb_cdc_putc, "SWC Ok\r\n");
 	}
 	else if(nCmdCode == CMD_SWP)	//PWM Switch
 	{
 		PWMSwitchS(sCommand+CMD_FIX_LEN+1);
-		printf(usb_cdc_putc, "Ok\r\n");	
+		printf(usb_cdc_putc, "SWP Ok\r\n");
 		
 	}
 	else if(nCmdCode == CMD_NVS)	//Naviscroll
@@ -1099,65 +1124,70 @@ void ParseCommand()
 		nTmp = atoi(sCommand+CMD_FIX_LEN+1);
 		NaviscrollCommand(nTmp);
 		if(g_bDebug)
-			printf(usb_cdc_putc, "OK %ld\r\n", nTmp);
+			printf(usb_cdc_putc, "NVS OK %ld\r\n", nTmp);
 		else
-			printf(usb_cdc_putc, "OK\r\n");
+			printf(usb_cdc_putc, "NVS OK\r\n");
 	}
 	else if(nCmdCode == CMD_IOH)	//Set IO port high
 	{
 		if(OutputPin(1, sCommand+CMD_FIX_LEN+1))
 		{
-			printf(usb_cdc_putc, "Ok IOH\r\n");
+			printf(usb_cdc_putc, "IOH Ok\r\n");
 		}
 		else
 		{
-			printf(usb_cdc_putc, "ERR: Incorrect IOH command.\r\n");
+			printf(usb_cdc_putc, "IOH ERR: Incorrect IOH command.\r\n");
 		}
 	}
 	else if(nCmdCode == CMD_IOL)
 	{
 		if(OutputPin(0, sCommand+CMD_FIX_LEN+1))
 		{
-			printf(usb_cdc_putc, "Ok IOL\r\n");
+			printf(usb_cdc_putc, "IOL Ok\r\n");
 		}
 		else
 		{
-			printf(usb_cdc_putc, "ERR: Incorrect IOH command.\r\n");
+			printf(usb_cdc_putc, "IOL ERR: Incorrect IOH command.\r\n");
 		}
 	}
 	else if(nCmdCode == CMD_INP)	//Inpurt pin
 	{
 		nTmp = InputPin(sCommand+CMD_FIX_LEN+1);
 		if(nTmp == 0)
-			printf(usb_cdc_putc, "0\r\n");
+			printf(usb_cdc_putc, "INP 0\r\n");
 		else if(nTmp == 1)
-			printf(usb_cdc_putc, "1\r\n");
+			printf(usb_cdc_putc, "INP 1\r\n");
 		else
 		{
 //			printf(usb_cdc_putc, "ERR:%s=%ld\r\n", sCommand, nTmp);
 			printf(usb_cdc_putc, "0x%04lX\r\n", nTmp);
+	    }
 	}
-	}
+	else if(nCmdCode == CMD_SHT)	//SHT11
+    {
+    	ReadHumidity();
+    	printf(usb_cdc_putc, "SHT %3.1f %3.1f\r\n", fSHT11_T, fSHT11_H);
+    }
 	else if(nCmdCode == CMD_ADC)
 	{
 		nTmp = ReadADC(sCommand+CMD_FIX_LEN+1);
-		printf(usb_cdc_putc, "%ld\r\n", nTmp);
+		printf(usb_cdc_putc, "ADC %ld\r\n", nTmp);
 	}
 	else if(nCmdCode == CMD_DBG)
 	{
 		if(sCommand[CMD_FIX_LEN+1] == 'O' && sCommand[CMD_FIX_LEN+2] == 'N')
 		{
 			g_bDebug = 1;
-			printf(usb_cdc_putc, "Debug On\r\n");	
+			printf(usb_cdc_putc, "DBG On\r\n");
 		}
 		else
 		{
 			g_bDebug = 0;
-			printf(usb_cdc_putc, "Debug Off\r\n");	
+			printf(usb_cdc_putc, "DBG Off\r\n");
 			
 		}
 		
-		printf(usb_cdc_putc, "Ok\r\n");
+		printf(usb_cdc_putc, "DBG Ok\r\n");
 	}
 	else if(nCmdCode == CMD_ACC)
 	{
