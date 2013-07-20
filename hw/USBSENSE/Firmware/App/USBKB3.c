@@ -932,7 +932,7 @@ int16 InputPin(char *sPort)
 			case 0: return input(PIN_C0);break;
 			case 1: return input(PIN_C1);break;
 			case 2: return input(PIN_C2);break;
-			case 3: return input(PIN_C3);break;
+			//case 3: return input(PIN_C3);break;
 			case 4: return input(PIN_C4);break;
 			case 5: return input(PIN_C5);break;
 			case 6: return input(PIN_C6);break;

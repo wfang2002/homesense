@@ -4,13 +4,25 @@
 //// An example set of device / configuration descriptors for use with ////
 //// CCS's CDC Virtual COM Port driver (see usb_cdc.h)                 ////
 ////                                                                   ////
-//// Two examples are provided:                                        ////
-////      ex_usb_serial.c                                              ////
-////      ex_usb_serial2.c                                             ////
+//// This file is part of CCS's PIC USB driver code.  See USB.H        ////
+//// for more documentation and a list of examples.                    ////
 ////                                                                   ////
 ///////////////////////////////////////////////////////////////////////////
 ////                                                                   ////
 //// Version History:                                                  ////
+////                                                                   ////
+//// April 7th, 2009:                                                  ////
+////   Vista 'code 10' issues resolved.                                ////
+////                                                                   ////
+////                                                                   ////
+//// March 5th, 2009:                                                  ////
+////   Cleanup for Wizard.                                             ////
+////   PIC24 Initial release.                                          ////
+////                                                                   ////
+//// 10/28/05:                                                         ////
+////    Bulk endpoint sizes updated to allow more than 255 byte        ////
+////    packets.                                                       ////
+////    Changed device to USB 1.10                                     ////
 ////                                                                   ////
 ///////////////////////////////////////////////////////////////////////////
 ////        (C) Copyright 1996,2005 Custom Computer Services           ////
@@ -25,8 +37,34 @@
 #IFNDEF __USB_DESCRIPTORS__
 #DEFINE __USB_DESCRIPTORS__
 
-#include <usb.h>
+///////// config options, although it's best to leave alone for this demo /////
+#define  USB_CONFIG_PID       0x4B47
+#define  USB_CONFIG_VID       0x4657
+#define  USB_CONFIG_BUS_POWER 100   //100mA  (range is 0..500)
+#define  USB_CONFIG_VERSION   0x0100      //01.00  //range is 00.00 to 99.99
+//////// end config ///////////////////////////////////////////////////////////
 
+#DEFINE USB_HID_DEVICE  FALSE
+#DEFINE USB_CDC_DEVICE  TRUE
+
+#define USB_CDC_COMM_IN_ENDPOINT       1
+#define USB_CDC_COMM_IN_SIZE           8
+#define USB_EP1_TX_ENABLE  USB_ENABLE_INTERRUPT
+#define USB_EP1_TX_SIZE  USB_CDC_COMM_IN_SIZE
+
+//pic to pc endpoint config
+#define USB_CDC_DATA_IN_ENDPOINT       2
+#define USB_CDC_DATA_IN_SIZE           64
+#define USB_EP2_TX_ENABLE  USB_ENABLE_BULK
+#define USB_EP2_TX_SIZE  USB_CDC_DATA_IN_SIZE
+
+//pc to pic endpoint config
+#define USB_CDC_DATA_OUT_ENDPOINT       2
+#define USB_CDC_DATA_OUT_SIZE           64
+#define USB_EP2_RX_ENABLE  USB_ENABLE_BULK
+#define USB_EP2_RX_SIZE  USB_CDC_DATA_OUT_SIZE
+
+#include "usb.h"
 
 //////////////////////////////////////////////////////////////////
 ///
@@ -52,8 +90,13 @@
          2, //number of interfaces this device supports       ==4
          0x01, //identifier for this configuration.  (IF we had more than one configurations)      ==5
          0x00, //index of string descriptor for this configuration      ==6
+        #if USB_CONFIG_BUS_POWER
+         0x80, //bit 6=1 if self powered, bit 5=1 if supports remote wakeup (we don't), bits 0-4 unused and bit7=1         ==7
+        #else
          0xC0, //bit 6=1 if self powered, bit 5=1 if supports remote wakeup (we don't), bits 0-4 unused and bit7=1         ==7
-         0x32, //maximum bus power required (maximum milliamperes/2)  (0x32 = 100mA)  ==8
+        #endif
+         USB_CONFIG_BUS_POWER/2, //maximum bus power required (maximum milliamperes/2)  (0x32 = 100mA)   ==8
+
 
    //interface descriptor 0 (comm class interface)
          USB_DESC_INTERFACE_LEN, //length of descriptor      =9
@@ -98,7 +141,7 @@
          USB_CDC_COMM_IN_ENDPOINT | 0x80, //endpoint number and direction
          0x03, //transfer type supported (0x03 is interrupt)         ==40
          USB_CDC_COMM_IN_SIZE,0x00, //maximum packet size supported                  ==41,42
-         250,  //polling interval, in ms.  (cant be smaller than 10)      ==43
+         250,  //polling interval, in ms.  (interrupt endpoint cant be smaller than 10 for slow speed devices)      ==43
 
    //interface descriptor 1 (data class interface)
          USB_DESC_INTERFACE_LEN, //length of descriptor      =44
@@ -112,20 +155,20 @@
          0x00, //index of string descriptor for interface      ==52
 
    //endpoint descriptor
-         USB_DESC_ENDPOINT_LEN, //length of descriptor                   ==60
-         USB_DESC_ENDPOINT_TYPE, //constant ENDPOINT (ENDPOINT 0x05)          ==61
-         USB_CDC_DATA_OUT_ENDPOINT, //endpoint number and direction (0x02 = EP2 OUT)       ==62
-         0x02, //transfer type supported (0x02 is bulk)         ==63
-         USB_CDC_DATA_OUT_SIZE,0x00, //maximum packet size supported                  ==64, 65
-         250,  //polling interval, in ms.  (cant be smaller than 10)      ==66
-
-   //endpoint descriptor
          USB_DESC_ENDPOINT_LEN, //length of descriptor                   ==53
          USB_DESC_ENDPOINT_TYPE, //constant ENDPOINT (ENDPOINT 0x05)          ==54
-         USB_CDC_DATA_IN_ENDPOINT | 0x80, //endpoint number and direction (0x82 = EP2 IN)       ==55
+         USB_CDC_DATA_OUT_ENDPOINT, //endpoint number and direction (0x02 = EP2 OUT)       ==55
          0x02, //transfer type supported (0x02 is bulk)         ==56
-         USB_CDC_DATA_IN_SIZE,0x00, //maximum packet size supported                  ==57, 58
-         250,  //polling interval, in ms.  (cant be smaller than 10)      ==59
+         USB_CDC_DATA_OUT_SIZE & 0xFF, (USB_CDC_DATA_OUT_SIZE >> 8) & 0xFF, //maximum packet size supported                  ==57, 58
+         1,  //polling interval, in ms.   ==59
+
+   //endpoint descriptor
+         USB_DESC_ENDPOINT_LEN, //length of descriptor                   ==60
+         USB_DESC_ENDPOINT_TYPE, //constant ENDPOINT (ENDPOINT 0x05)          ==61
+         USB_CDC_DATA_IN_ENDPOINT | 0x80, //endpoint number and direction (0x82 = EP2 IN)       ==62
+         0x02, //transfer type supported (0x02 is bulk)         ==63
+         USB_CDC_DATA_IN_SIZE & 0xFF, (USB_CDC_DATA_IN_SIZE >> 8) & 0xFF, //maximum packet size supported                  ==66, 67
+         1,  //polling interval, in ms.   ==68
    };
 
    //****** BEGIN CONFIG DESCRIPTOR LOOKUP TABLES ********
@@ -144,7 +187,7 @@
    //second dimension specifies which interface
    //last dimension specifies which class in this interface to get, but most will only have 1 class per interface
    //if a class descriptor is not valid, set the value to 0xFFFF
-   const int16 USB_CLASS_DESCRIPTORS[USB_NUM_CONFIGURATIONS][USB_MAX_NUM_INTERFACES][4]=
+   const int8 USB_CLASS_DESCRIPTORS[USB_NUM_CONFIGURATIONS][USB_MAX_NUM_INTERFACES][4]=
    {
    //config 1
       //interface 0
@@ -152,7 +195,7 @@
          18,23,27,32,
       //interface 1
          //no classes for this interface
-         0xFFFF,0xFFFF,0xFFFF,0xFFFF
+         0xFF,0xFF,0xFF,0xFF
    };
 
    #if (sizeof(USB_CONFIG_DESC) != USB_TOTAL_CONFIG_LEN)
@@ -166,18 +209,18 @@
 ///
 //////////////////////////////////////////////////////////////////
 
-   char USB_DEVICE_DESC[USB_DESC_DEVICE_LEN] ={
+   const char USB_DEVICE_DESC[USB_DESC_DEVICE_LEN] ={
       //starts of with device configuration. only one possible
          USB_DESC_DEVICE_LEN, //the length of this report   ==0
          0x01, //the constant DEVICE (DEVICE 0x01)  ==1
-         0x00,0x02, //usb version in bcd  ==2,3
+         0x10,0x01, //usb version in bcd  ==2,3
          0x02, //class code. 0x02=Communication Device Class ==4
          0x00, //subclass code ==5
          0x00, //protocol code ==6
          USB_MAX_EP0_PACKET_LENGTH, //max packet size for endpoint 0. (SLOW SPEED SPECIFIES 8) ==7
-         0x57,0x46, //vendor id (0x04D8 is Microchip, or is it 0x0461 ??)  ==8,9
-         0x47,0x4B, //product id   ==10,11
-         0x00,0x01, //device release number  ==12,13
+         USB_CONFIG_VID & 0xFF, ((USB_CONFIG_VID >> 8) & 0xFF), //vendor id       ==9, 10
+         USB_CONFIG_PID & 0xFF, ((USB_CONFIG_PID >> 8) & 0xFF), //product id, don't use 0xffff       ==11, 12
+         USB_CONFIG_VERSION & 0xFF, ((USB_CONFIG_VERSION >> 8) & 0xFF), //device release number  ==13,14
          0x01, //index of string description of manufacturer. therefore we point to string_1 array (see below)  ==14
          0x02, //index of string descriptor of the product  ==15
          0x00, //index of string descriptor of serial number  ==16
@@ -195,9 +238,15 @@
 ///
 //////////////////////////////////////////////////////////////////
 
+#if !defined(USB_STRINGS_OVERWRITTEN)
 //the offset of the starting location of each string.  offset[0] is the start of string 0, offset[1] is the start of string 1, etc.
 char USB_STRING_DESC_OFFSET[]={0,4,16};
 
+// Here is where the "CCS" Manufacturer string and "SERIAL DEMO" are stored.
+// Strings are saved as unicode.
+// These strings are mostly only displayed during the add hardware wizard.
+// Once the operating system drivers have been installed it will usually display
+// the name from the drivers .INF.
 char const USB_STRING_DESC[]={
    //string 0
          4, //length of string index
@@ -230,5 +279,6 @@ char const USB_STRING_DESC[]={
          'R',0,
 		 'L',0
 };
+#endif   //!defined(USB_STRINGS_OVERWRITTEN)
 
 #ENDIF
