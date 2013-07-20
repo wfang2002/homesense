@@ -65,7 +65,7 @@ sp.on('data', function(data){
     var status = data.toString();
     status = status.replace('\r\n', '');
     var fields = status.split(' ');
-    if (fields < 2) return;
+    if (fields.length < 2) return;
 
     var cmd = fields[0];
 
@@ -79,6 +79,10 @@ sp.on('data', function(data){
         }
 
     } else if (cmd == 'SHT') {
+        if (fields.length != 2) {
+            querySHT11();   // Retry
+            return;
+        }
         var temperature = parseFloat(fields[1]);
         var humidity = parseFloat(fields[2]);
         console.log("Temperature: %s, Humidity: %s", temperature, humidity);
