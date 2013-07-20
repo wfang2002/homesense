@@ -255,25 +255,25 @@ char const USB_STRING_DESC[]={
    //string 1
          12, //length of string index
          USB_DESC_STRING_TYPE, //descriptor type 0x03 (STRING)
+         'W',0,
+         'F',0,
+         'A',0,
          'N',0,
-         'O',0,
-         'K',0,
-         'I',0,
-         'A',0,			
+         'G',0,
    //string 2
          32, //length of string index
          USB_DESC_STRING_TYPE, //descriptor type 0x03 (STRING)
-         'B',0,
-         'T',0,
-         'U',0,
+         'H',0,
+         'O',0,
+         'M',0,
+         'E',0,
          'S',0,
-         'B',0,
-         'K',0,
-         'B',0,
-         '3',0,
+         'E',0,
+         'N',0,
+         'S',0,
+         'E',0,
          ' ',0,
-         'K',0,
-         'B',0,
+         ' ',0,
          'C',0,
          'T',0,
          'R',0,

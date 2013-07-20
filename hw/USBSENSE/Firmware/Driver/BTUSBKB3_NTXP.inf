@@ -2,35 +2,35 @@
 Signature="$Windows NT$"
 Class=Ports
 ClassGuid={4D36E978-E325-11CE-BFC1-08002BE10318}
-Provider=%NOKIA%
+Provider=%WFANG%
 LayoutFile=layout.inf
 
 [Manufacturer]
-%NOKIA%=NOKIA
+%WFANG%=WFANG
 
-[NOKIA]
-%NOKIA_CDC%=USBKB3, USB\VID_4657&PID_4B47
+[WFANG]
+%WFANG_CDC%=HOMESENSE, USB\VID_4657&PID_4B47
 
-[USBKB3_Install.NTx86]
+[HOMESENSE_Install.NTx86]
 ;Windows2000
 
 [DestinationDirs]
 DefaultDestDir=12
-USBKB3.NT.Copy=12
+HOMESENSE.NT.Copy=12
 
-[USBKB3.NT]
-CopyFiles=USBKB3.NT.Copy
-AddReg=USBKB3.NT.AddReg
+[HOMESENSE.NT]
+CopyFiles=HOMESENSE.NT.Copy
+AddReg=HOMESENSE.NT.AddReg
 
-[USBKB3.NT.Copy]
+[HOMESENSE.NT.Copy]
 usbser.sys
 
-[USBKB3.NT.AddReg]
+[HOMESENSE.NT.AddReg]
 HKR,,DevLoader,,*ntkern
 HKR,,NTMPDriver,,usbser.sys
 HKR,,EnumPropPages32,,"MsPorts.dll,SerialPortPropPageProvider"
 
-[USBKB3.NT.Services]
+[HOMESENSE.NT.Services]
 AddService = usbser, 0x00000002, Service_Inst
 
 [Service_Inst]
@@ -42,6 +42,6 @@ ServiceBinary = %12%\usbser.sys
 LoadOrderGroup = Base
 
 [Strings]
-NOKIA = "Nokia Vancouver"
-NOKIA_CDC = "BTUSBKB3"
-Serial.SvcDesc = "BlackTusk USB Input Device Controller"
+WFANG = "WFANG Vancouver"
+WFANG_CDC = "HOMESENSE"
+Serial.SvcDesc = "Homesense USB Input Device Controller"
