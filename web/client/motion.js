@@ -124,18 +124,18 @@ function getHourlyStatAsync(tsStart, tsEnd, callback) {
     }
 
     // Fill in hourly count
-    //var events = MotionSensorEvents.find({status:"1", updated:{$gte:tsStart, $lt:tsEnd}}, {sort:{updated:-1}}).fetch();
-    Meteor.call('getMotionEvents', tsStart, tsEnd, function(err, events) {
+    Meteor.call('getMotionEventsAggregate', tsStart, tsEnd, function(err, events) {
         _.each(events, function(event) {
+            console.dir(event);
 
-            var date = event.updated;
+            var date = event._id;
             var label;
             label = date.format("MMddhh");
-            list[label].count++;
+            list[label].count = event.count;
 
         });
 
-        //console.dir(list);
+        console.dir(list);
 
         if(callback)callback(err, list);
     })

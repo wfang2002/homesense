@@ -35,6 +35,10 @@ Meteor.startup(function () {
         }
     }
 
+    MotionSensorEvents._ensureIndex({status:1, updated:1});
+    ComfortSensorData._ensureIndex({updated:1});
+
+    aggregateEnabler();
 
 });
 
@@ -92,6 +96,101 @@ Meteor.methods({
         if (type) condition.type = type;
         var events = ComfortSensorData.find(condition, {sort:{updated:-1}}).fetch();
         console.log('Found %s comfort data.', events.length);
+        return events;
+    },
+
+    getMotionEventsAggregate: function(tsStart, tsEnd, granularity) {
+        granularity = granularity || "hour";
+
+        var minutes = 10;
+
+        var match = {$match:{status:"1", updated:{$gte:tsStart, $lt:tsEnd}}};
+        var proj1 =  {"$project" : {
+            "_id" : 0,
+            "updated" : 1,
+            "station_id" : 1,
+            "h" : {
+                "$hour" : "$updated"
+            },
+            "m" : {
+                "$minute" : "$updated"
+            },
+            "fmin" : {
+                "$mod" : [
+                    {
+                        "$minute" : "$updated"
+                    },
+                    minutes
+                ]
+            },
+            "s" : {
+                "$second" : "$updated"
+            },
+            "ml" : {
+                "$millisecond" : "$updated"
+            }
+        }};
+
+        var projDay={"$project" : {
+            "_id" : 0,
+            "station_id" : 1,
+            "updated" : {
+                "$subtract" : [
+                    "$updated",
+                    {
+                        "$add" : [
+                            "$ml",
+                            {"$multiply" : ["$s",1000]},
+                            {"$multiply" : ["$m",60,1000]},
+                            {"$multiply" : ["$h",60,60,1000]}
+                        ]
+                    }
+                ]
+            }
+        }};
+
+        var projHour={"$project" : {
+            "_id" : 0,
+            "station_id" : 1,
+            "updated" : {
+                "$subtract" : [
+                    "$updated",
+                    {
+                        "$add" : [
+                            "$ml",
+                            {"$multiply" : ["$s",1000]},
+                            {"$multiply" : ["$m",60,1000]}
+                        ]
+                    }
+                ]
+            }
+        }};
+
+        var projMinute={"$project" : {
+            "_id" : 0,
+            "station_id" : 1,
+            "updated" : {"$subtract" : ["$updated", {"$add" : ["$ml",{"$multiply" : ["$s",1000]}]}]}
+        }};
+
+        var projxMinute={"$project" : {
+            "_id" : 0,
+            "station_id" : 1,
+            "updated" : {"$subtract" : ["$updated", {"$add" : [
+                "$ml",
+                {"$multiply" : ["$s",1000]},
+                {"$multiply" : ["$fmin",60,1000]}
+            ]}]}
+        }};
+
+        var group = {$group:{_id: "$updated", count:{$sum:1}}};
+
+        var sort = {$sort: {_id:1}};
+
+        var events = MotionSensorEvents.aggregate([match, proj1, granularity == 'minute' ? projxMinute : projHour, group, sort]);
+
+        console.dir(events);
+        //var events = MotionSensorEvents.find({status:"1", updated:{$gte:tsStart, $lt:tsEnd}}, {sort:{updated:-1}}).fetch();
+        //console.log('Found %s events.', events.length);
         return events;
     }
 })
