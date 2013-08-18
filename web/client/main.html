@@ -1,70 +1,39 @@
 <head>
-    <title>alwynmobi</title>
+    <title>Sweet Home</title>
     <meta name="viewport" content="width=device-width, initial-scale=1, maximum-scale=1.0, user-scalable=no">
-    <script src="/js/jquery/jquery-1.9.1.min.js"></script>
-    <script src="/js/jquery/jquery.mobile-1.3.0.min.js"></script>
+    <link rel="apple-touch-icon" href="/smarthome.jpg" />
+    <link rel="apple-touch-startup-image" href="/smarthome.jpg" />
+    <meta name="apple-mobile-web-app-capable" content="yes" />
+    <script type="text/javascript" src="/js/jquery/jquery-1.9.1.min.js"></script>
+    <script type="text/javascript" src="/js/jquery/jquery.mobile-1.3.0.min.js"></script>
+    <script type="text/javascript" src="/js/jqplot/jquery.jqplot.min.js"></script>
+    <script type="text/javascript" src="/js/jqplot/plugins/jqplot.canvasOverlay.min.js"></script>
+    <script type="text/javascript" src="/js/jqplot/plugins/jqplot.barRenderer.min.js"></script>
+    <script type="text/javascript" src="/js/jqplot/plugins/jqplot.categoryAxisRenderer.min.js"></script>
+    <script type="text/javascript" src="/js/jqplot/plugins/jqplot.dateAxisRenderer.min.js"></script>
+    <script type="text/javascript" src="/js/jqplot/plugins/jqplot.pointLabels.min.js"></script>
+    <link rel="stylesheet" type="text/css" href="/js/jqplot/jquery.jqplot.min.css" />
 </head>
 
 <body>
-<div class="page" data-role="page" id="home" data-theme="">
 
+
+<div class="page" data-role="page" id="motion" data-theme="">
     {{> header}}
-    {{> home}}
+    {{> motion}}
 </div>
+
 </body>
 
 <template name="header">
     <div class="header" data-role="header">
-        <h1>Motion Events</h1>
+        <h1>Sweet Home</h1>
         <div id="s-Application_bar" class="richtext" style="text-align: center">
             <div>
-                <div class="valign"><span id="rtr-s-Application_bar_0"></span></div>
+                <div class="valign"><span ></span></div>
             </div>
         </div>
     </div>
 </template>
 
-<template name="home">
-    <div class="content" data-role="content">
 
-        <h3>Hourly Stats.</h3>
-        <table class='table-stroke'  width="100%">
-            <thead>
-                <tr>
-                    <th>Station#</th>
-                    <th>Time</th>
-                </tr>
-            </thead>
-
-            <tbody>
-            {{#each motionEvents }}
-            <tr>
-                <td width="50%" style="text-align: center">{{station_id}}</td>
-                <td width="50%">{{shortTime updated}}</td>
-            </tr>
-            {{/each}}
-            </tbody>
-
-        </table>
-        <h3>Hourly Stats.</h3>
-
-        <table class='table-stroke' width="100%">
-            <thead>
-            <tr>
-                <th width="50%">Hour</th>
-                <th width="50%">Count</th>
-            </tr>
-            </thead>
-
-            <tbody>
-            {{#each hourlyEvents }}
-            <tr>
-                <td>{{hour}}</td>
-                <td style="text-align: center">{{count}}</td>
-            </tr>
-            {{/each}}
-            </tbody>
-
-        </table>
-    </div>
-</template>

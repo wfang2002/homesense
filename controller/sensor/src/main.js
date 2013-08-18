@@ -48,7 +48,17 @@ var sp = new SerialPort(argv.comport, {baudrate:38400});
 sp.on("open", function(err) {
     console.log('port opened');
 
-    setInterval(queryInfraRedSensor, 1000);
+    querySHT11();
+
+    var i = 0;
+    setInterval(function() {
+        if (++i == 5*60) {  // query temperature/humidity every 5 minute
+            i = 0;
+            querySHT11();
+        } else {
+            queryInfraRedSensor();
+        }
+    }, 1000);
 });
 
 var last_status = '0';
@@ -56,11 +66,34 @@ var last_status = '0';
 sp.on('data', function(data){
     var status = data.toString();
     status = status.replace('\r\n', '');
-    console.log('data received:' + data);
-    if (status != last_status && ddp_connected) {
-        last_status = status;
-        ddpclient.call('updateMotionSensorEvent', [{station_id:'0', status:status, updated:new Date()}]);
+    var fields = status.split(' ');
+    if (fields.length < 2) return;
+
+    var cmd = fields[0];
+
+    if (cmd == 'INP') {
+        status = fields[1];
+        //console.log('data received:' + data);
+        if (status != last_status && ddp_connected) {
+            console.log('status changed to: ', status);
+            last_status = status;
+            ddpclient.call('updateMotionSensorEvent', [{station_id:'0', status:status, updated:new Date()}]);
+        }
+
+    } else if (cmd == 'SHT') {
+    	console.log("received: %s", status);
+
+        var temperature = parseFloat(fields[1]);
+        var humidity = parseFloat(fields[2]);
+        
+        if (isNaN(temperature) || isNaN(humidity)) {
+            querySHT11();   // Retry
+            return;
+        }
+        console.log("Temperature: %s, Humidity: %s", temperature, humidity);
+        ddpclient.call('updateComfortSensorData', [{station_id:'0', data:{t:temperature, h:humidity}, updated:new Date()}]);
     }
+
 
 });
 
@@ -80,6 +113,10 @@ sp.on('error', function (err) {
         });
     });
 });
+
+function querySHT11() {
+    sp.write('SHT\r\n');
+}
 
 function queryInfraRedSensor() {
     sp.write('INP RD0\r\n', function(err, result) {

@@ -1,0 +1,81 @@
+<template name="motion">
+    <div id='motion-content' class="content" data-role="content">
+
+        <div class="ui-grid-a ui-responsive">
+            <div class="ui-block-a">
+                <table style="width:100%; background-color: #eee;margin-left:1px">
+                    <tr>
+                        <td>
+                            <h3>Recent Events</h3>
+                        </td>
+                    </tr>
+                </table>
+
+                <table class='table-stroke'  width="100%">
+                    <thead>
+                    <tr>
+                        <th width="25%">Time</th>
+                        <th width="50%">Location</th>
+                        <th width="25%">Type</th>
+                    </tr>
+                    </thead>
+
+                    <tbody>
+                    {{#isolate}}
+                    {{#each motionEvents }}
+                    <tr>
+                        <td style="text-align: center">{{shortTime updated}}</td>
+                        <td style="text-align: center">{{location}}</td>
+                        <td>Motion</td>
+                    </tr>
+                    {{/each}}
+                    {{/isolate}}
+                    </tbody>
+
+                </table>
+            </div>
+            <div class="ui-block-b">
+                <table style="width:100%; background-color: #eee; margin-left:1px">
+                    <tr>
+                        <td>
+                            <h3>Event History</h3>
+                        </td>
+                        <td style="float:right">
+                            <div data-role="controlgroup" data-type="horizontal">
+                                <a id="btn-prev" href="#" data-role="button" data-mini="true">Prev</a>
+                                <a id="btn-next" href="#" data-role="button" data-mini="true">Next</a>
+                            </div>
+                        </td>
+                    </tr>
+                </table>
+
+                {{#constant}}
+                <div id="hourly-chart" style="height:200px;width:100%"></div>
+                {{/constant}}
+
+                <table class='table-stroke' width="100%" style="display: none">
+                    <thead>
+                    <tr>
+                        <th width="50%">Hour</th>
+                        <th width="50%">Count</th>
+                    </tr>
+                    </thead>
+
+                    <tbody>
+                    {{#each hourlyEvents }}
+                    <tr>
+                        <td>{{hour}}</td>
+                        <td style="text-align: center">{{count}}</td>
+                    </tr>
+                    {{/each}}
+                    </tbody>
+
+                </table>
+
+            </div>
+            <div class="ui-block-a">
+                {{>comfortChart}}
+            </div>
+        </div>
+    </div>
+</template>

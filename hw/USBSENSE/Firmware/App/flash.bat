@@ -1,0 +1,1 @@
+BTUSBFlash.exe -dUSBKB3 USBKB3.hex

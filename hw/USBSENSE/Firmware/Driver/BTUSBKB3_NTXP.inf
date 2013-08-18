@@ -1,0 +1,47 @@
+[Version]
+Signature="$Windows NT$"
+Class=Ports
+ClassGuid={4D36E978-E325-11CE-BFC1-08002BE10318}
+Provider=%WFANG%
+LayoutFile=layout.inf
+
+[Manufacturer]
+%WFANG%=WFANG
+
+[WFANG]
+%WFANG_CDC%=HOMESENSE, USB\VID_4657&PID_4B47
+
+[HOMESENSE_Install.NTx86]
+;Windows2000
+
+[DestinationDirs]
+DefaultDestDir=12
+HOMESENSE.NT.Copy=12
+
+[HOMESENSE.NT]
+CopyFiles=HOMESENSE.NT.Copy
+AddReg=HOMESENSE.NT.AddReg
+
+[HOMESENSE.NT.Copy]
+usbser.sys
+
+[HOMESENSE.NT.AddReg]
+HKR,,DevLoader,,*ntkern
+HKR,,NTMPDriver,,usbser.sys
+HKR,,EnumPropPages32,,"MsPorts.dll,SerialPortPropPageProvider"
+
+[HOMESENSE.NT.Services]
+AddService = usbser, 0x00000002, Service_Inst
+
+[Service_Inst]
+DisplayName = %Serial.SvcDesc%
+ServiceType = 1 ; SERVICE_KERNEL_DRIVER
+StartType = 3 ; SERVICE_DEMAND_START
+ErrorControl = 1 ; SERVICE_ERROR_NORMAL
+ServiceBinary = %12%\usbser.sys
+LoadOrderGroup = Base
+
+[Strings]
+WFANG = "WFANG Vancouver"
+WFANG_CDC = "HOMESENSE"
+Serial.SvcDesc = "Homesense USB Input Device Controller"
