@@ -1,6 +1,7 @@
 var liveChart  = true;      // if true then each refresh will adjust data end time to current time.
 var hourlyChart;    // jqPlot handle
 var hourlySerialData = []; //data
+var hourlyChartStart;
 var hourlyChartEnd = new Date();
 
 Template.motion.motionEvents = function() {
@@ -126,7 +127,6 @@ function getHourlyStatAsync(tsStart, tsEnd, callback) {
     // Fill in hourly count
     Meteor.call('getMotionEventsAggregate', tsStart, tsEnd, function(err, events) {
         _.each(events, function(event) {
-            console.dir(event);
 
             var date = event._id;
             var label;
@@ -135,8 +135,6 @@ function getHourlyStatAsync(tsStart, tsEnd, callback) {
 
         });
 
-        console.dir(list);
-
         if(callback)callback(err, list);
     })
 }
@@ -144,8 +142,8 @@ function getHourlyStatAsync(tsStart, tsEnd, callback) {
 
 function refreshHourlyChart() {
     console.log('refresh hourly chart');
-    var tsStart = new Date(hourlyChartEnd.getTime() - 24*60*60000);
-    getHourlyStatAsync(tsStart, hourlyChartEnd, function(err, hourlyData) {
+    hourlyChartStart = new Date(hourlyChartEnd.getTime() - 24*60*60000);
+    getHourlyStatAsync(hourlyChartStart, hourlyChartEnd, function(err, hourlyData) {
         hourlySerialData = hourlyData;
         showHourlyChart();
     })
@@ -236,4 +234,9 @@ function showHourlyChart() {
     console.log("Initial drawing chart. shall call only once.");
     $('#hourly-chart').empty();
     hourlyChart = $.jqplot('hourly-chart', [s1], options);
+
+    $("#hourly-chart").off();
+    $("#hourly-chart").on('jqplotDataClick', function (ev, seriesIndex, pointIndex, data) {
+        console.log("Click on " + 'series: '+seriesIndex+', point: '+pointIndex+', data: '+data + ', Date:' + new Date(hourlyChartStart.getTime() + pointIndex*60*60000));
+    });
 }
