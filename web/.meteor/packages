@@ -6,3 +6,5 @@
 insecure
 preserve-inputs
 appcache
+standard-app-packages
+reststop2

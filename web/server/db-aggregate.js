@@ -17,7 +17,7 @@ aggregateEnabler = function() {
                     future.throw(err);
                     return;
                 }
-                future.ret([true, result]);
+                future.return([true, result]);
             });
         });
         var result = future.wait();
