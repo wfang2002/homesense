@@ -8,3 +8,7 @@ preserve-inputs
 appcache
 standard-app-packages
 reststop2
+meteor-server-log4js
+accounts-base
+accounts-password
+email

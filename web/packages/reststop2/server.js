@@ -117,13 +117,18 @@ _RESTstop.prototype._start = function(){
   var self = this,
       connect = Npm.require("connect");
 
-  WebApp.connectHandlers.use(function(req, res, next) {
-    connect.query();
-    connect.bodyParser();
-    return next();
-  });
+//  WebApp.connectHandlers.use(function(req, res, next) {
+//    connect.query()(req, res, next);
+//    connect.bodyParser(req, res, next);
+//    return next();
+//  });
 
-  WebApp.connectHandlers.use(function(req, res, next) {
+    //WebApp.connectHandlers.use(connect.bodyParser());
+
+  WebApp.connectHandlers
+      .use(connect.query())
+      .use(connect.bodyParser())
+      .use(function(req, res, next) {
     if (req.url.slice(0, self._config.api_path.length) !== self._config.api_path) {
       return next();
     }

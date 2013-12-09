@@ -8,10 +8,10 @@ var getClientAddress = function (req) {
 
 var defaultContentType = "application/json;charset=utf-8";
 
-RESTstop.configure({use_auth: true});
+RESTstop.configure({use_auth: true, api_path:'/api'});
 
 RESTstop.add(
-    '/api/test_results', 'GET', function () {
+    '/test_results', 'GET', function () {
         //logger.info("Request: ", this.request);
         var perfStart = new Date();
         var method = this.request.method;
@@ -56,56 +56,130 @@ RESTstop.add(
     }
 );
 
-// Register mobile client devices
+/*
+    Register a device from  mobile
+    mandatory params: user_id, auth_token, sn
+ */
 RESTstop.add(
-    '/api/register_device', 'POST', function () {
+    '/mobile/register_device', 'POST', function () {
         //logger.info("Request: ", this.request);
         var method = this.request.method;
         var header = this.request.header;
-        var params = this.request.body;
+        var query = this.request.query;
+        var body = this.request.body;
         this.response.setHeader('Content-Type', defaultContentType);
 
+        // extend params from url and body
+        var params = query;
+        params = _.extend(params, body);
+
         logger.info("Received request: ", this.request.url);
-        logger.info("Received request body: %j", this.request.body);
+        logger.info("Received request params: %j", params);
 
-        var app = cacheGet("Apps", params.app_id);
-        if (app) {
+        var devSn = params.sn;
+        var apiToken = params.api_token;
 
-            var fields = _.pick(params, 'user_id', 'api_key', 'udid',  'width', 'height', 'mac', 'model', 'os', 'push_token', 'prd');
-            fields.owner = app.owner;
-
-            if (fields.push_token) {
-                //allow lowercase a-f, 0-9 only
-                fields.push_token = fields.push_token.toLowerCase().replace(/[^a-f0-9]/ig, "");
-            }
-
-            var id = getHash(params.push_token + params.app_id);
-            try {
-                fields._id = id;
-                fields.created = new Date();
-                MobileDevices.insert(fields);
-
-                logger.info("API finished");
-                return EJSON.stringify({status:'ok', msg: 'device registered.'});
-            } catch(e) {
-                delete fields._id;
-                delete fields.created;
-                fields.updated = new Date();
-                MobileDevices.update({_id:id}, {$set:fields});
-
-                logger.info("API finished");
-                return EJSON.stringify({status:'ok', msg: 'device updated.'});
-            }
+        if (!devSn || !RemoteDevices.findOne({_id:devSn})) {
+            return EJSON.stringify({status:'error', error:'204', msg:"sn not exists"});
         }
 
-        return EJSON.stringify({status:'error', error:'204', msg:"app_id not exists"});
+        if (!apiToken) {
+            return EJSON.stringify({status:'reject', msg:"missing api token"});
+        }
+
+        var clientIp = getClientAddress(this.request);
+        return EJSON.stringify({status:'ok', ip:clientIp});
     }
 );
 
+/*
+    device reports data to server.
+    mandatory params: sn
+    optional params: api_token
+ */
+RESTstop.add(
+    '/device/data', 'POST', function () {
+        //logger.info("Request: ", this.request);
+        var method = this.request.method;
+        var header = this.request.header;
+        var query = this.request.query;
+        var body = this.request.body;
+        this.response.setHeader('Content-Type', defaultContentType);
+
+        // extend params from url and body
+        var params = query;
+        params = _.extend(params, body);
+
+        logger.info("Received request: ", this.request.url);
+        logger.info("Received request params: %j", params);
+
+        var devSn = params.sn;
+        var apiToken = params.api_token;
+
+        if (!devSn || !RemoteDevices.findOne({_id:devSn})) {
+            return EJSON.stringify({status:'error', error:'204', msg:"sn not exists"});
+        }
+
+        if (!apiToken) {
+            return EJSON.stringify({status:'reject', msg:"missing api token"});
+        }
+
+        var clientIp = getClientAddress(this.request);
+        return EJSON.stringify({status:'ok', ip:clientIp});
+    }
+);
+
+RESTstop.add(
+    '/device/ip_changed', 'POST', function () {
+        //logger.info("Request: ", this.request);
+        var method = this.request.method;
+        var header = this.request.header;
+        var query = this.request.query;
+        var body = this.request.body;
+
+        // extend params from url and body
+        var params = query;
+        params = _.extend(params, body);
+
+        this.response.setHeader('Content-Type', defaultContentType);
+
+        logger.info("Received request: ", this.request.url);
+        logger.info("Received request params: %j", params);
+
+        var deviceIp = getClientAddress(this.request);
+        return EJSON.stringify({status:'ok', ip:deviceIp});
+    }
+);
+
+RESTstop.add(
+    '/echo', 'GET', function () {
+        //logger.info("Request: ", this.request);
+        var method = this.request.method;
+        var header = this.request.header;
+        var query = this.request.query;
+        var body = this.request.body;
+        var clientIp = getClientAddress(this.request);
+
+        this.response.setHeader('Content-Type', defaultContentType);
+
+        logger.info("Received request: ", this.request.url);
+
+        var response = {};
+        response.query = query;
+        response.status = "ok";
+        response.ip= clientIp;
+
+        if (query.pretty) {
+            return JSON.stringify(response, null, 4);
+        }
+
+        return EJSON.stringify(response);
+    }
+);
 
 // Send error message for unknown api
 RESTstop.add(
-    '/api/*', 'GET', function () {
+    '/*', 'GET', function () {
         return EJSON.stringify({status:'error', error:'204', msg:"api not exists"});
     }
 );
