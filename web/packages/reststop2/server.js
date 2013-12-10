@@ -2,7 +2,9 @@ _RESTstop = function() {
   this._routes = [];
   this._config = {
     use_auth: false,
-    api_path: 'api',
+    api_path: '/api',
+    onLoggedIn: function(){},
+    onLoggedOut: function(){}
   };
   this._started = false;
 };
@@ -37,7 +39,7 @@ _RESTstop.prototype.add = function(path, options, endpoint)  {
 
 _RESTstop.prototype.match = function(request, response) {
   for (var i = 0; i < this._routes.length; i++) {
-    var params = [], route = this._routes[i];
+    var params = {}, route = this._routes[i];
 
     if (route[0].match(request.url, request.method, params)) {
       context = {request: request, response: response, params: params};
@@ -46,11 +48,11 @@ _RESTstop.prototype.match = function(request, response) {
       for (var key in context.params)
         args.push(context.params[key]);
 
-      if(request.method == "POST") {
-        context.parms = _.extend(context.params, request.body);
+      if(request.method == "POST" || request.method == "PUT") {
+        _.extend(context.params, request.body);
       }
-      if(request.method == "GET") {
-        context.parms = _.extend(context.params, request.query);
+      if(request.method == "GET" || _.size(request.query)) {
+        _.extend(context.params, request.query);
       }
 
       if(this._config.use_auth) {
@@ -95,7 +97,7 @@ _RESTstop.prototype.configure = function(config){
     throw new Error("RESTstop.configure() has to be called before first call to RESTstop.add()");
   }
 
-  this._config = _.extend(this._config, config);
+  _.extend(this._config, config);
 
   if(this._config.api_path[0] != "/") {
     this._config.api_path = "/"  +this._config.api_path;
@@ -117,18 +119,9 @@ _RESTstop.prototype._start = function(){
   var self = this,
       connect = Npm.require("connect");
 
-//  WebApp.connectHandlers.use(function(req, res, next) {
-//    connect.query()(req, res, next);
-//    connect.bodyParser(req, res, next);
-//    return next();
-//  });
-
-    //WebApp.connectHandlers.use(connect.bodyParser());
-
-  WebApp.connectHandlers
-      .use(connect.query())
-      .use(connect.bodyParser())
-      .use(function(req, res, next) {
+  WebApp.connectHandlers.use(connect.query());
+  WebApp.connectHandlers.use(connect.bodyParser());
+  WebApp.connectHandlers.use(function(req, res, next) {
     if (req.url.slice(0, self._config.api_path.length) !== self._config.api_path) {
       return next();
     }
@@ -138,6 +131,7 @@ _RESTstop.prototype._start = function(){
     if(typeof(Fiber)=="undefined") Fiber = Npm.require('fibers');
 
     Fiber(function() {
+      res.statusCode = 200; // 200 response, by default
       var output = RESTstop.match(req, res);
 
       if (output === false) {
@@ -198,6 +192,64 @@ _RESTstop.prototype.getPublished = function (context, name, args) {
   return this._apply(context, name, args, 'publish_handlers');
 };
 
+MethodInvocation = function (options) {
+  var self = this;
+
+  // true if we're running not the actual method, but a stub (that is,
+  // if we're on a client (which may be a browser, or in the future a
+  // server connecting to another server) and presently running a
+  // simulation of a server-side method for latency compensation
+  // purposes). not currently true except in a client such as a browser,
+  // since there's usually no point in running stubs unless you have a
+  // zero-latency connection to the user.
+  this.isSimulation = options.isSimulation;
+
+  // call this function to allow other method invocations (from the
+  // same client) to continue running without waiting for this one to
+  // complete.
+  this._unblock = options.unblock || function () {};
+  this._calledUnblock = false;
+
+  // current user id
+  this.userId = options.userId;
+
+  // sets current user id in all appropriate server contexts and
+  // reruns subscriptions
+  this._setUserId = options.setUserId || function () {};
+
+  // used for associating the connection with a login token so that the
+  // connection can be closed if the token is no longer valid
+  this._setLoginToken = options._setLoginToken || function () {};
+
+  // Scratch data scoped to this connection (livedata_connection on the
+  // client, livedata_session on the server). This is only used
+  // internally, but we should have real and documented API for this
+  // sort of thing someday.
+  this._sessionData = options.sessionData;
+};
+
+_.extend(MethodInvocation.prototype, {
+  unblock: function () {
+    var self = this;
+    self._calledUnblock = true;
+    self._unblock();
+  },
+  setUserId: function(userId) {
+    var self = this;
+    if (self._calledUnblock)
+      throw new Error("Can't call setUserId in a method after calling unblock");
+    self.userId = userId;
+    self._setUserId(userId);
+  },
+  _setLoginToken: function (token) {
+    this._setLoginToken(token);
+    this._sessionData.loginToken = token;
+  },
+  _getLoginToken: function (token) {
+    return this._sessionData.loginToken;
+  }
+});
+
 _RESTstop.prototype._apply = function (context, name, args, handler_name) { 
   var self = Meteor.default_server;
 
@@ -213,14 +265,14 @@ _RESTstop.prototype._apply = function (context, name, args, handler_name) {
       throw new Error("Can't call setUserId on a server initiated method call");
     };
 
-    var invocation = new Meteor._MethodInvocation({
+    var invocation = new MethodInvocation({
       isSimulation: false,
       userId: context.user._id, setUserId: setUserId,
       sessionData: self.sessionData
     });
 
     try {
-      var result = Meteor._CurrentInvocation.withValue(invocation, function () {
+      var result = DDP._CurrentInvocation.withValue(invocation, function () {
         return maybeAuditArgumentChecks(
           handler, invocation, args, "internal call to '" + name + "'");
       });
@@ -236,9 +288,9 @@ _RESTstop.prototype._apply = function (context, name, args, handler_name) {
 
 var maybeAuditArgumentChecks = function (f, context, args, description) {
   args = args || [];
-  if (Meteor._LivedataServer._auditArgumentChecks) {
+  if (Package['audit-argument-checks']) {
     return Match._failIfArgumentsAreNotAllChecked(
-    f, context, args, description);
+      f, context, args, description);
   }
   return f.apply(context, args);
 };

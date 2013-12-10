@@ -37,7 +37,7 @@ var loginWithPassword = function (options) {
   // Just check the verifier output when the same identity and salt
   // are passed. Don't bother with a full exchange.
   var verifier = user.services.password.srp;
-  var newVerifier = Meteor._srp.generateVerifier(options.password, {
+  var newVerifier = SRP.generateVerifier(options.password, {
     identity: verifier.identity, salt: verifier.salt});
 
     if (verifier.verifier !== newVerifier.verifier)
@@ -68,13 +68,32 @@ _RESTstop.prototype.initAuth = function() {
       return [e.error, {success: false, message: e.reason}];
     }
 
+    // Get the user object
+    var context = [];
+    if(login.userId && login.loginToken) {
+      context.user = Meteor.users.findOne({
+        _id: login.userId, 
+        "services.resume.loginTokens.token": login.loginToken
+      });
+    }
+    RESTstop._config.onLoggedIn.apply(context);
+
     login.success = true;
     return login;
   });
 
-  RESTstop.add('logout', {'method': 'POST'}, function() {
+  RESTstop.add('logout', {'method': 'GET', require_login: true}, function() {
+    var loginToken = this.params.loginToken;
+    if(this.request.headers['x-login-token']) {
+      loginToken = this.request.headers['x-login-token'];
+    }
+
     // Log the user out
-    // (We should delete the token... but even Meteor doesn't actually do this)
+    Meteor.users.update(
+    this.user._id, {$pull: {'services.resume.loginTokens': {token: loginToken}}});
+
+    RESTstop._config.onLoggedOut.call(this);
+
     return {success: true, message: "You've been logged out!"};
   });
 };
