@@ -10,48 +10,79 @@ var defaultContentType = "application/json;charset=utf-8";
 
 RESTstop.configure({use_auth: true, api_path:'/api'});
 
+/*
+    sign up from mobile terminal
+    email and password are mandatory
+ */
 RESTstop.add(
-    '/test_results', 'GET', function () {
+    '/signup', 'POST', function () {
+        //logger.info("Request: ", this.request);
+        var method = this.request.method;
+        var header = this.request.header;
+        var query = this.request.query;
+        var body = this.request.body;
+
+        var params = this.params;
+
+        this.response.setHeader('Content-Type', defaultContentType);
+
+        logger.info("Received request: ", this.request.url);
+        logger.info("Received request params: %j", params);
+
+        if (!params.email) {
+            return EJSON.stringify({status:'error', error:1,  msg:"missing email"});
+        }
+
+        if (!params.password) {
+            return EJSON.stringify({status:'error', error:2,  msg:"missing password"});
+        }
+
+        if (Meteor.users.findOne({username:params.email})) {
+            return EJSON.stringify({status:'error', error:3,  msg:"email already exist"});
+        }
+
+        logger.info("Creating user: ", params.email);
+        var result = Accounts.createUser({username: params.email, email:params.email, password:params.password,
+            profile:{name:params.email, api_key:apiKeyGen(10), devices:[]}});
+
+        logger.info("CreateUser finished: result=%s", result );
+
+        var deviceIp = getClientAddress(this.request);
+        return EJSON.stringify({status:'ok', ip:deviceIp});
+    }
+);
+
+
+/*
+    return all devices registered to current user
+ */
+RESTstop.add(
+    '/mobile/devices', {require_login: true}, function () {
         //logger.info("Request: ", this.request);
         var perfStart = new Date();
         var method = this.request.method;
         var header = this.request.header;
         var query = this.request.query;
-		this.response.setHeader('Content-Type', defaultContentType);
+        var body = this.request.body;
+        var params = this.params;
+
+        this.response.setHeader('Content-Type', defaultContentType);
 
         logger.info("Received request: ", this.request.url);
+        logger.info("Received request body: %j", body);
 
-        var response = {status:'ok'};
-
-        var page = (query.page > 0) ? query.page : 1;
-        var page_size = (query.page_size > 0) ? query.page_size : 10;
-        var since = query.since;
-
-        var querySelector = {};
-        var queryOptions = {sort:{ts_end:-1}, limit:page_size, skip:(page - 1) * page_size};
-
-        if (since) {
-
-            var d = new Date(since);
-            logger.info("Finds test result since: ", d);
-            querySelector = {ts_end:{$gt: d.getTime()}};
+        if (!this.user || !this.user.profile) {
+            return EJSON.stringify({status:'error', error:1, msg:"internal error"});
         }
 
-        var testResults = TAFTestPackageLogs.find(querySelector, queryOptions).fetch();
+        console.log("user=", this.user);
+        var deviceIds = this.user.profile.devices || [];
 
-        response.count = testResults.length;
-        response.results = testResults;
+        console.log("deviceIds=", deviceIds);
+        var devices = DeviceStock.find({_id:{$in:deviceIds}}).fetch();
 
-        // add performance data for debugging
-        var perfEnd = new Date();
-        var duration = perfEnd - perfStart;
-        response.perf = duration;
-
-        logger.info("API finished");
-        if (query.pretty) {
-            return JSON.stringify(response, null, 4);
-        }
-        return EJSON.stringify(response);
+        console.log("devices=", devices);
+        return EJSON.stringify({status:'ok', devices:devices});
 
     }
 );
@@ -69,9 +100,7 @@ RESTstop.add(
         var body = this.request.body;
         this.response.setHeader('Content-Type', defaultContentType);
 
-        // extend params from url and body
-        var params = query;
-        params = _.extend(params, body);
+        var params = this.params;
 
         logger.info("Received request: ", this.request.url);
         logger.info("Received request params: %j", params);
@@ -106,9 +135,7 @@ RESTstop.add(
         var body = this.request.body;
         this.response.setHeader('Content-Type', defaultContentType);
 
-        // extend params from url and body
-        var params = query;
-        params = _.extend(params, body);
+        var params = this.params;
 
         logger.info("Received request: ", this.request.url);
         logger.info("Received request params: %j", params);
@@ -125,6 +152,7 @@ RESTstop.add(
         }
 
         var clientIp = getClientAddress(this.request);
+
         return EJSON.stringify({status:'ok', ip:clientIp});
     }
 );
@@ -137,9 +165,7 @@ RESTstop.add(
         var query = this.request.query;
         var body = this.request.body;
 
-        // extend params from url and body
-        var params = query;
-        params = _.extend(params, body);
+        var params = this.params;
 
         this.response.setHeader('Content-Type', defaultContentType);
 
@@ -151,8 +177,9 @@ RESTstop.add(
     }
 );
 
+
 RESTstop.add(
-    '/echo', 'GET', function () {
+    '/echo', ["POST", "GET"], function () {
         //logger.info("Request: ", this.request);
         var method = this.request.method;
         var header = this.request.header;
@@ -165,7 +192,7 @@ RESTstop.add(
         logger.info("Received request: ", this.request.url);
 
         var response = {};
-        response.query = query;
+        response.params = this.params;
         response.status = "ok";
         response.ip= clientIp;
 
