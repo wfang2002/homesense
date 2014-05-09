@@ -18,4 +18,15 @@ DeviceStock = new Meteor.Collection("device_stock");
 // record shall be removed after registration process done.
 DevicePendingVerification = new Meteor.Collection("device_pending_verification")
 
+// output value to remote device with binary/analog value points.
 Outputs = new Meteor.Collection("outputs");
+
+// keeps the latest value of remote device value points.
+Inputs = new Meteor.Collection("inputs");
+
+// History log of all inputs
+InputsHistory = new Meteor.Collection("inputs_history");
+
+// Aggregated input history log
+// Aggregate types: 5 minutes, 30 minutes, 1 hour
+InputsAggregated = new Meteor.Collection("inputs_aggregated");

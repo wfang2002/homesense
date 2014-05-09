@@ -6,7 +6,7 @@
         "src": "./src"
     },
     "dependencies": {
-        "ddp": "0.3.2",
+        "ddp": "",
         "optimist": "",
         "step": "0.0.5",
         "knox": "0.8.3",

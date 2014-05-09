@@ -48,6 +48,11 @@ Meteor.startup(function () {
 });
 
 Meteor.methods({
+    unsolicitedResponse: function(details) {
+        var ip = headers.methodClientIP(this);
+        console.log("Client ip:  ", ip);
+    },
+    
     updateMotionSensorEvent: function(details) {
         console.log("updateMotionSensorEvent called: %j", details);
         if (!details || details.length === 0) {
@@ -97,6 +102,7 @@ Meteor.methods({
     },
 
     getComfortData: function(tsStart, tsEnd, type) {
+
         var condition = {updated:{$gte:tsStart, $lt:tsEnd}};
         if (type) condition.type = type;
         var events = ComfortSensorData.find(condition, {sort:{updated:-1}}).fetch();
