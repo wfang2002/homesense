@@ -1,2 +1,2 @@
-set MONGO_URL=mongodb://192.168.1.74:27017/homesense
-meteor
+set MONGO_URL=mongodb://localhost:27017/homesense
+C:\Users\wfang\AppData\Local\.meteor\meteor --port 4000

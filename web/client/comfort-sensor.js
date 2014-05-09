@@ -164,129 +164,66 @@ function showHourlyChart() {
 
     var idx = 0;
     // series data
-    var s1 = _.map(hourlyData, function(val){return val.temperature;});
-    var s2 = _.map(hourlyData, function(val){return val.humidity;});
-
-    //var tsStart = s1[50][0];
-    //var vertLinePos = tsStart;
-    //console.log('tsStart = %s', tsStart);
-//    var vertLinePos = new Date(tsStart);
-//    vertLinePos.setDate(vertLinePos.getDate() + 1);
-//    vertLinePos.setHours(0);
-//    vertLinePos.setMinutes(0);
-//    vertLinePos.setMilliseconds(0);
-
+    var s1 = _.map(hourlyData, function(val){return [val.ts, val.temperature || 1];});
+    var s2 = _.map(hourlyData, function(val){return [val.ts, val.humidity || 1];});
+    
     // x-axis label
     var vertPos = 0;
     var idx = 0;
-    var ticks = _.map(hourlyData, function(val){
-        idx++;
-        var date = new Date(val.ts);
-        if (date.getHours() == 0 && date.getMinutes() == 0) {
-            vertPos = idx;
-            return date.format('M/dd');
-        } else {
-            if (date.getHours() % 2 === 0 && date.getMinutes() == 0) {
-                return date.format('hh');
-            } else {
-                return "";
-            }
+
+    Highcharts.setOptions({
+        global: {
+            useUTC: false
         }
     });
 
-    var options = {
-        // The "seriesDefaults" option is an options object that will
-        // be applied to all series in the chart.
-        seriesDefaults:{
-            //renderer:$.jqplot.BezierCurveRenderer,
-            showMarker:false,
-            rendererOptions: {
-                smooth: true
-            }
-        },
-        // Custom labels for the series are specified with the "label"
-        // option on the series option.  Here a series option object
-        // is specified for each series.
-        series:[
-            {label:'Temperature'},
-            {label:'Humidity', yaxis:'y2axis'}
-
-        ],
-        // Show the legend and put it outside the grid, but inside the
-        // plot container, shrinking the grid to accomodate the legend.
-        // A value of "outside" would not shrink the grid and allow
-        // the legend to overflow the container.
-        legend: {
-            show: true,
-            placement: 'insideGrid'
-        },
-        axes: {
-            // Use a category axis on the x axis and use our custom ticks.
-            xaxis: {
-                renderer: $.jqplot.CategoryAxisRenderer,
-                ticks: ticks
-            },
-//            xaxis: {
-//                renderer: $.jqplot.DateAxisRenderer,
-//                tickOptions:{formatString: '%H'},
-//                tickInterval: '2 hours'
-//            },
-            // Pad the y axis just a little so bars can get close to, but
-            // not touch, the grid boundaries.  1.2 is the default padding.
-            yaxis: {
-                //pad: 1.05,
-                padMin: 0,
-                tickOptions: {
-                    showGridline: true,
-                    formatString: '%d°C'
-                },
-                min:10,
-                max:40
-            },
-
-            y2axis: {
-                padMin: 0,
-                min:40,
-                max:70,
-                tickOptions: {
-                    formatString: '%d%%'
+    $('#comfort-chart').highcharts({
+        plotOptions: {
+                line: {
+                    connectNulls: true
                 }
-            }
-        } ,
-
-        axesDefaults: {
-            tickOptions: {
-                showGridline: false
-            }
-
+            },
+        title: {
+            text: '',
+            x: -20 //center
         },
-
-        canvasOverlay: {
-            show: true,
-            objects: [
-                {dashedVerticalLine: {
-                    name: 'dateline',
-                    x: vertPos,
-                    lineWidth: 1,
-                    yOffset: 0,
-                    color: 'rgb(133, 120, 24)',
-                    shadow: false
-                }}
-            ]
-        }
-    };
-
-    //console.dir(s1);
-
-    // Replot chart if already initialized
-    if (hourlyChart) {
-        console.log("replot chart");
-        options.data = [s1, s2];
-        hourlyChart.replot(options);
-        return;
-    }
-
-    console.log("Initial drawing chart. shall call only once.");
-    $('#comfort-chart').empty();
-    hourlyChart = $.jqplot('comfort-chart', [s1, s2], options);
+        subtitle: {
+            text: '',
+            x: -20
+        },  
+        xAxis: {
+            type: 'datetime',
+            dateTimeLabelFormats: { // don't display the dummy year
+                month: '%e. %b',
+                year: '%b'
+            },
+        },          
+        yAxis: [
+            {
+                title: {text: '°C'}
+            },
+            {
+                title: {text: '%'},
+                opposite: true
+            }]
+        ,
+        legend: {
+            layout: 'vertical',
+            align: 'right',
+            verticalAlign: 'top',
+            borderWidth: 1,
+            floating: true,
+            x: -20
+        },
+        series: [{
+            name: 'Temperature',
+            type:'spline',
+            data: s1
+        },
+        {
+            name: 'Humidity',
+            type:'spline',
+            data: s2
+        }]
+    });
 }

@@ -4,11 +4,10 @@
 # but you can also edit it by hand.
 
 insecure
-preserve-inputs
-appcache
 standard-app-packages
 reststop2
 meteor-server-log4js
 accounts-base
 accounts-password
 email
+meteor-highcharts

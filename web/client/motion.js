@@ -156,87 +156,51 @@ function showHourlyChart() {
 
     var idx = 0;
     // series data
-    var s1 = _.map(hourlyData, function(val){return val.count;});
-    // x-axis label
-    var ticks = _.map(hourlyData, function(val){
-        var date = new Date(val.ts);
-        if (date.getHours() == 0) {
-            return date.format('M/dd');
-        } else {
-            if (date.getHours() % 2 === 0) {
-                return date.format('hh');
-            } else {
-                return "";
-            }
+    var s1 = _.map(hourlyData, function(val){return [val.ts, val.count];});
+
+    console.log("Initial drawing chart. shall call only once.");
+
+    Highcharts.setOptions({
+        global: {
+            useUTC: false
         }
     });
 
-    var options = {
-        // The "seriesDefaults" option is an options object that will
-        // be applied to all series in the chart.
-        seriesDefaults:{
-            renderer:$.jqplot.BarRenderer,
-            rendererOptions: {
-                barMargin: 2,
-                fillToZero: true
-            }
+    $('#hourly-chart').highcharts({
+        chart:{
+            type: 'column',
         },
-        // Custom labels for the series are specified with the "label"
-        // option on the series option.  Here a series option object
-        // is specified for each series.
-        series:[
-            {label:'Motion'}
-        ],
-        // Show the legend and put it outside the grid, but inside the
-        // plot container, shrinking the grid to accomodate the legend.
-        // A value of "outside" would not shrink the grid and allow
-        // the legend to overflow the container.
-        legend: {
-            show: true,
-            placement: 'insideGrid'
+        title: {
+            text: '',
+            x: -20 //center
         },
-        axes: {
-            // Use a category axis on the x axis and use our custom ticks.
-            xaxis: {
-                renderer: $.jqplot.CategoryAxisRenderer,
-                ticks: ticks
+        subtitle: {
+            text: '',
+            x: -20
+        },  
+        xAxis: {
+            type: 'datetime',
+            dateTimeLabelFormats: { // don't display the dummy year
+                month: '%e. %b',
+                year: '%b'
             },
-            // Pad the y axis just a little so bars can get close to, but
-            // not touch, the grid boundaries.  1.2 is the default padding.
-            yaxis: {
-                //pad: 1.05,
-                padMin: 0,
-                tickOptions: {
-                    showGridline: true,
-                    formatString: '%d'
-                }
+        },          
+        yAxis: {
+            title: {
+                text: 'Count'
             }
-        } ,
-
-        axesDefaults: {
-            tickOptions: {
-                showGridline: false
-            }
-
-        }
-    };
-
-    //console.dir(s1);
-
-    // Replot chart if already initialized
-    if (hourlyChart) {
-        console.log("replot chart");
-        options.data = [s1];
-        hourlyChart.replot(options);
-        return;
-    }
-
-    console.log("Initial drawing chart. shall call only once.");
-    $('#hourly-chart').empty();
-    hourlyChart = $.jqplot('hourly-chart', [s1], options);
-
-    $("#hourly-chart").off();
-    $("#hourly-chart").on('jqplotDataClick', function (ev, seriesIndex, pointIndex, data) {
-        console.log("Click on " + 'series: '+seriesIndex+', point: '+pointIndex+', data: '+data + ', Date:' + new Date(hourlyChartStart.getTime() + pointIndex*60*60000));
+        },
+        legend: {
+            layout: 'vertical',
+            align: 'right',
+            verticalAlign: 'top',
+            borderWidth: 1,
+            floating: true,
+            x: -10
+        },
+        series: [{
+            name: 'Motion',
+            data: s1
+        }]
     });
 }
