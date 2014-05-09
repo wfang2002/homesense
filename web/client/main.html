@@ -5,28 +5,35 @@
     <link rel="apple-touch-startup-image" href="/smarthome.jpg" />
     <meta name="apple-mobile-web-app-capable" content="yes" />
     <!-- <script type="text/javascript" src="/js/jquery/jquery-1.9.1.min.js"></script> -->
-    <script type="text/javascript" src="/js/jqplot/jquery.jqplot.min.js"></script>
-    <script type="text/javascript" src="/js/jqplot/plugins/jqplot.canvasOverlay.min.js"></script>
-    <script type="text/javascript" src="/js/jqplot/plugins/jqplot.barRenderer.min.js"></script>
-    <script type="text/javascript" src="/js/jqplot/plugins/jqplot.categoryAxisRenderer.min.js"></script>
-    <script type="text/javascript" src="/js/jqplot/plugins/jqplot.dateAxisRenderer.min.js"></script>
-    <script type="text/javascript" src="/js/jqplot/plugins/jqplot.pointLabels.min.js"></script>
-    <link rel="stylesheet" type="text/css" href="/js/jqplot/jquery.jqplot.min.css" />
+    <link rel="stylesheet" href="/css/homesense.css" />
+  <link rel="stylesheet" href="/css/jquery.mobile.icons.min.css" />
+  <link rel="stylesheet" href="/css/jquery.mobile.structure-1.4.2.css" />
 </head>
 
 <body>
 
 
+<div class="page ui-page-theme-a" data-role="page" id="light-page" data-theme="">
+    {{> header}}
+    {{> lightdimmer}}
+    <div data-role="footer">
+        <h4>Page Footer</h4>
+    </div><!-- /footer -->
+</div>
+
 <div class="page" data-role="page" id="motion" data-theme="">
     {{> header}}
     {{> motion}}
+    <div data-role="footer">
+        <h4>Page Footer</h4>
+    </div><!-- /footer -->
 </div>
 
 </body>
 
 <template name="header">
     <div class="header" data-role="header">
-        <h1>Sweet Home</h1>
+        <h1>HomeSense</h1>
         <div id="s-Application_bar" class="richtext" style="text-align: center">
             <div>
                 <div class="valign"><span ></span></div>

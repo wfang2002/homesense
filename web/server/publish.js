@@ -11,3 +11,7 @@ Meteor.publish("recentComfortData", function(count) {
     var limit = count || 5;
     return ComfortSensorData.find({}, {sort:{updated:-1}, limit:limit});
 });
+
+Meteor.publish("outputs", function() {
+    return Outputs.find();
+})

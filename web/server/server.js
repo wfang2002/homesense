@@ -35,6 +35,11 @@ Meteor.startup(function () {
         }
     }
 
+    var outputs = Outputs.findOne();
+    if (!outputs) {
+        Outputs.insert({device_id:"111", binary_points:[false], analog_points:[30, 30, 30, 30, 30, 30]});
+    }
+
     MotionSensorEvents._ensureIndex({status:1, updated:1});
     ComfortSensorData._ensureIndex({updated:1});
 
