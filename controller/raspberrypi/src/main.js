@@ -63,6 +63,8 @@ ddpclient.connect(function(error) {
     console.log('connected @ ', new Date().toString());
 
     ddp_connected = true;
+	
+	ddpclient.call("unsolicitedResponse", [], function(err, result){});
 
     ddpclient.subscribe('outputs');
 
@@ -118,4 +120,6 @@ function handleOutputChanges(msg) {
         }
     }
 }
+
+
 
