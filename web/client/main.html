@@ -13,12 +13,25 @@
 <body>
 
 
-<div class="page ui-page-theme-a" data-role="page" id="light-page" data-theme="">
-    {{> header}}
+<div class="page" data-role="page" id="home" data-theme="a">
+    <div data-role="header" data-position="inline">
+         <h1>Home</h1>
+         
+    </div>
+    <a href="#light-page" data-role="button" data-icon="" data-iconshadow="false"
+            data-direction="" data-transition="slide"
+            data-iconpos="notext"  class="">Light</a>
+</div>
+
+<div class="page" data-role="page" id="light-page" data-theme="a" data-add-back-btn="true">
+    <div data-role="header" data-position="inline">
+         <h1>Control</h1>
+         <a href="#" data-role="button" data-rel="back" data-icon="arrow-l">Back</a>
+    </div>
     {{> lightdimmer}}
-    <div data-role="footer">
+<!--     <div data-role="footer">
         <h4>Page Footer</h4>
-    </div><!-- /footer -->
+    </div> -->
 </div>
 
 <div class="page" data-role="page" id="motion" data-theme="">

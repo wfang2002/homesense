@@ -10,7 +10,7 @@ Template.lightdimmer.rendered = function() {
 
     console.log("Enter Template.lightdimmer.rendered");
 
-    $(".dimming-slider").slider("option", "disabled", true);
+    //$(".dimming-slider").slider("option", "disabled", true);
     // Force refresh jQuery Mobile elements
     $('#lightdimmer-content').trigger('create');
 
