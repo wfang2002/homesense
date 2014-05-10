@@ -6,7 +6,7 @@ var Crypto = require("crypto");
 var http = require('http-get');
 var easyimg = require('easyimage');
 var uartDimmer = require('./uartdimmer.js');
-
+var tempSensors = require('./ds18b20.js')
 
 
 var workInt;
@@ -122,41 +122,53 @@ function handleOutputChanges(msg) {
 
         if (settings.isManual) {
             dimLed(settings.brightness);
+        } else {
+            autoDimLed();
         }
     }
 }
 
+function autoDimLed(){
+
+    var now = new Date();
+    var brightness;
+    var hours = now.getHours();
+
+    // hardcoded lighting schedule
+    if (hours < 8) {
+        brightness = [0, 0, 50, 1, 0, 50];
+    } else if (hours < 9) {
+        var whiteness = parseInt((now.getMinutes() + 1) * 100 / 60);
+        brightness = [whiteness, whiteness, parseInt(50 + whiteness/2), 
+            whiteness, whiteness, parseInt(50 + whiteness/2)]
+    } else if (hours > 20 ) {
+        var whiteness = parseInt((60 - now.getMinutes()/4) * 100 / 60);
+        brightness = [whiteness, whiteness, parseInt(50 + whiteness/2), 
+            whiteness, whiteness, parseInt(50 + whiteness/2)]
+    } else if (hours  > 23) {
+        brightness = [0, 0, 50, 1, 0, 50];
+    }
+
+    if (brightness.join(',') != settings.brightness.join(',')) {
+        // changed
+        settings.brightness = brightness;
+        dimLed(brightness);
+    }
+}
 
 function doWork() {
     
     if (!settings.isManual) {
-        // hardcoded lighting schedule
-        var now = new Date();
-        var brightness;
-        var hours = now.getHours();
-        if (hours < 8) {
-            brightness = [0, 0, 50, 1, 0, 50];
-        } else if (hours < 9) {
-            var whiteness = parseInt((now.getMinutes() + 1) * 100 / 60);
-            brightness = [whiteness, whiteness, parseInt(50 + whiteness/2), 
-                whiteness, whiteness, parseInt(50 + whiteness/2)]
-        } else if (hours > 20 ) {
-            var whiteness = parseInt((60 - now.getMinutes()/4) * 100 / 60);
-            brightness = [whiteness, whiteness, parseInt(50 + whiteness/2), 
-                whiteness, whiteness, parseInt(50 + whiteness/2)]
-        } else if (hours  > 23) {
-            brightness = [0, 0, 50, 1, 0, 50];
-        }
-
-        if (brightness.join(',') != settings.brightness.join(',')) {
-            // changed
-            settings.brightness = brightness;
-            dimLed(brightness);
-            var response = {device_id: deviceId, analog_points:settings.brightness};
-            ddpclient.call("unsolicitedResponse", [response], function(err, result){});
-        }
-
+        
+        autoDimLed();
     }
+
+    var temps = tempSensors.readAll();
+    var values = settings.brightness;
+    values = values.concat(_.values(temps));
+    var response = {device_id: deviceId, analog_points:values};
+    console.log("values=", values);
+    ddpclient.call("unsolicitedResponse", [response], function(err, result){}); 
 }
 
 
