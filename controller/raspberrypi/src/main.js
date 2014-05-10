@@ -19,6 +19,19 @@ var settings = {
     brightness: []
 };
 
+var dimSchedule = [
+{hour: 0, brightness:[ 0,  0, 10, 0, 0, 10]},
+{hour: 5, brightness:[ 5,  0, 20, 0, 0, 20]},
+{hour: 6, brightness:[ 5,  5, 20, 0, 0, 20]},
+{hour: 7, brightness:[ 5,  5, 20, 5, 5, 20]},
+{hour: 8, brightness:[50, 50, 50, 50, 50, 50]},
+{hour: 9, brightness:[80, 80, 80, 80, 80, 80]},
+{hour:17, brightness:[60 ,60, 60, 60, 60, 60]},
+{hour:20, brightness:[30 ,30, 30, 30, 30, 30]},
+{hour:21, brightness:[10 ,10, 20, 10, 10, 20]},
+{hour:23, brightness:[ 0 , 0, 10, 10, 10, 10]}
+]
+
 getHash = function(str) {
     var shasum = Crypto.createHash("sha1");
     shasum.update(str);
@@ -130,23 +143,24 @@ function handleOutputChanges(msg) {
 function autoDimLed(){
 
     var now = new Date();
-    var brightness;
+    var brightness = [];
     var hours = now.getHours();
 
     // hardcoded lighting schedule
-    if (hours < 8) {
-        brightness = [0, 0, 50, 1, 0, 50];
-    } else if (hours < 9) {
-        var whiteness = parseInt((now.getMinutes() + 1) * 100 / 60);
-        brightness = [whiteness, whiteness, parseInt(50 + whiteness/2), 
-            whiteness, whiteness, parseInt(50 + whiteness/2)]
-    } else if (hours == 20) {
-        var whiteness = parseInt((60 - now.getMinutes()/4) * 100 / 60);
-        brightness = [whiteness, whiteness, parseInt(50 + whiteness/2), 
-            whiteness, whiteness, parseInt(50 + whiteness/2)]
-    } else if (hours  > 20) {
-        brightness = [0, 0, 50, 1, 0, 50];
-    }
+    _.each(dimSchedule, function(schedule, idx) {
+        if (hours >= schedule.hour) {
+            var nextIdx = idx + 1;
+            if (nextIdx >= dimSchedule.length) nextIdx = 0;
+            var nextSchedule = dimSchedule[nextIdx];
+            var minutes = now.getMinutes() + (hours - schedule.hour) * 60;
+            var totalMinutes = ((nextSchedule.hour + 24 - schedule.hour) % 24) * 60;
+            for (var brIdx = 0; brIdx < schedule.brightness.length; brIdx++) {
+                var curBrightness = parseInt((schedule.brightness[brIdx] + nextSchedule.brightness[brIdx]) * minutes / totalMinutes);
+                brightness[brIdx] = curBrightness;
+            }
+
+        }
+    })
 
     console.log("autoDmLed: hours=%s, levels=%s", hours, brightness);
 
