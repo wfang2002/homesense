@@ -7,7 +7,10 @@ var http = require('http-get');
 var easyimg = require('easyimage');
 var uartDimmer = require('./uartdimmer.js');
 
-var job_queue = [];
+
+
+var workInt;
+var deviceId = "111";
 
 // local device settings
 var settings = {
@@ -21,12 +24,11 @@ getHash = function(str) {
     return shasum.digest('hex');
 }
 
-var usage = "Arguments: [--host hostname] [--port port_number] [--name controller_name]";
+var usage = "Arguments: [--host hostname] [--port port_number]";
 var argv = require('optimist')
     .usage(usage)
     .default('host', '127.0.0.1')
     .default('port', '3000')
-    .default('name', 'MULTISENSE')
     .argv;
 
 var meteor_host = argv.host;
@@ -62,11 +64,14 @@ ddpclient.connect(function(error) {
 
     console.log('connected @ ', new Date().toString());
 
-    ddp_connected = true;
-	
-	ddpclient.call("unsolicitedResponse", [], function(err, result){});
+    ddp_connected = true;	
 
     ddpclient.subscribe('outputs');
+
+    // wake worker every one minute
+    workInt = setInterval(function() {
+        doWork();
+    }, 60000);
 
 });
 
@@ -87,14 +92,14 @@ ddpclient.on('message', function(msg) {
 // Server down?
 ddpclient.on('socket-close', function(code, message) {
     console.log("Close: %s %s", code, message);
-    //clearInterval(job_int);
+    clearInterval(workInt);
     ddp_connected = false;
 });
 
 // Connection lost?
 ddpclient.on('socket-error', function(error) {
     console.log("Error: %j", error);
-    //clearInterval(job_int);
+    clearInterval(workInt);
     ddp_connected = false;
 });
 
@@ -121,5 +126,37 @@ function handleOutputChanges(msg) {
     }
 }
 
+
+function doWork() {
+    
+    if (!settings.isManual) {
+        // hardcoded lighting schedule
+        var now = new Date();
+        var brightness;
+        var hours = now.getHours();
+        if (hours < 8) {
+            brightness = [0, 0, 50, 1, 0, 50];
+        } else if (hours < 9) {
+            var whiteness = parseInt((now.getMinutes() + 1) * 100 / 60);
+            brightness = [whiteness, whiteness, parseInt(50 + whiteness/2), 
+                whiteness, whiteness, parseInt(50 + whiteness/2)]
+        } else if (hours > 20 ) {
+            var whiteness = parseInt((60 - now.getMinutes()/4) * 100 / 60);
+            brightness = [whiteness, whiteness, parseInt(50 + whiteness/2), 
+                whiteness, whiteness, parseInt(50 + whiteness/2)]
+        } else if (hours  > 23) {
+            brightness = [0, 0, 50, 1, 0, 50];
+        }
+
+        if (brightness.join(',') != settings.brightness.join(',')) {
+            // changed
+            settings.brightness = brightness;
+            dimLed(brightness);
+            var response = {device_id: deviceId, analog_points:settings.brightness};
+            ddpclient.call("unsolicitedResponse", [response], function(err, result){});
+        }
+
+    }
+}
 
 
