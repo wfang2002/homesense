@@ -70,6 +70,7 @@ ddpclient.connect(function(error) {
     ddpclient.subscribe('outputs');
 
     // wake worker every one minute
+    if (workInt)clearInterval(workInt);
     workInt = setInterval(function() {
         doWork();
     }, 60000);
@@ -93,14 +94,14 @@ ddpclient.on('message', function(msg) {
 // Server down?
 ddpclient.on('socket-close', function(code, message) {
     console.log("Close: %s %s", code, message);
-    clearInterval(workInt);
+    //clearInterval(workInt);
     ddp_connected = false;
 });
 
 // Connection lost?
 ddpclient.on('socket-error', function(error) {
     console.log("Error: %j", error);
-    clearInterval(workInt);
+    //clearInterval(workInt);
     ddp_connected = false;
 });
 
@@ -171,7 +172,7 @@ function doWork() {
     values = values.concat(_.values(temps));
     var response = {device_id: deviceId, analog_points:values};
     console.log("values=", values);
-    ddpclient.call("unsolicitedResponse", [response], function(err, result){}); 
+    if (ddp_connected)ddpclient.call("unsolicitedResponse", [response], function(err, result){}); 
 }
 
 
