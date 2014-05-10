@@ -35,9 +35,6 @@ var argv = require('optimist')
 var meteor_host = argv.host;
 var meteor_port = argv.port;
 
-//Controller name in format [EVN:]CLASS[.instance]
-var controller_name = argv.name;
-
 var ddp_connected = false;
 
 if (argv.help) {
@@ -45,7 +42,7 @@ if (argv.help) {
     process.exit(0);
 }
 
-console.log("Controller %s connecting to meteor server: %s:%s",controller_name, meteor_host, meteor_port);
+console.log("connecting to meteor server: %s:%s", meteor_host, meteor_port);
 
 var ddpclient = new DDPClient({
     host: meteor_host,
@@ -100,7 +97,7 @@ ddpclient.on('socket-close', function(code, message) {
 
 // Connection lost?
 ddpclient.on('socket-error', function(error) {
-    console.log("Error: %j", error);
+    console.log("Error: %s", error.toString());
     //clearInterval(workInt);
     ddp_connected = false;
 });
