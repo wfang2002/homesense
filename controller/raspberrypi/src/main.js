@@ -159,7 +159,7 @@ function autoDimLed(){
 
 function doWork() {
     
-    if (!settings.isManual) {
+    if (!settings.isManual || !ddp_connected) { // force to auto mode if server not reachable
         
         autoDimLed();
     }
