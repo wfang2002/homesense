@@ -38,6 +38,7 @@ function setLevels(levels) {
     serialPort.write("L " + levels.join(',') + "\n", function(err, results) {
         if (err)console.log('err ' + err);
 	else console.log("command sent");
+	busy = false;
 
         //console.log('results ' + results);
     });

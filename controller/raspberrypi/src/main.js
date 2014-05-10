@@ -8,6 +8,7 @@ var easyimg = require('easyimage');
 var uartDimmer = require('./uartdimmer.js');
 var tempSensors = require('./ds18b20.js')
 
+var _ = require('underscore');
 
 var workInt;
 var deviceId = "111";
@@ -141,13 +142,15 @@ function autoDimLed(){
         var whiteness = parseInt((now.getMinutes() + 1) * 100 / 60);
         brightness = [whiteness, whiteness, parseInt(50 + whiteness/2), 
             whiteness, whiteness, parseInt(50 + whiteness/2)]
-    } else if (hours > 20 ) {
+    } else if (hours == 20) {
         var whiteness = parseInt((60 - now.getMinutes()/4) * 100 / 60);
         brightness = [whiteness, whiteness, parseInt(50 + whiteness/2), 
             whiteness, whiteness, parseInt(50 + whiteness/2)]
-    } else if (hours  > 23) {
+    } else if (hours  > 20) {
         brightness = [0, 0, 50, 1, 0, 50];
     }
+
+    console.log("autoDmLed: hours=%s, levels=%s", hours, brightness);
 
     if (brightness.join(',') != settings.brightness.join(',')) {
         // changed
