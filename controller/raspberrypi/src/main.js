@@ -145,22 +145,26 @@ function autoDimLed(){
     var now = new Date();
     var brightness = [];
     var hours = now.getHours();
+    var ready = false;
 
     // hardcoded lighting schedule
-    _.each(dimSchedule, function(schedule, idx) {
-        if (hours >= schedule.hour) {
+    for(var idx = dimSchedule.length -1; idx >= 0; idx--) {
+        var schedule = dimSchedule[idx];
+        if (hours >= schedule.hour && !ready) {
+           
             var nextIdx = idx + 1;
             if (nextIdx >= dimSchedule.length) nextIdx = 0;
             var nextSchedule = dimSchedule[nextIdx];
             var minutes = now.getMinutes() + (hours - schedule.hour) * 60;
             var totalMinutes = ((nextSchedule.hour + 24 - schedule.hour) % 24) * 60;
+
             for (var brIdx = 0; brIdx < schedule.brightness.length; brIdx++) {
-                var curBrightness = parseInt((schedule.brightness[brIdx] + nextSchedule.brightness[brIdx]) * minutes / totalMinutes);
+                var curBrightness = parseInt(schedule.brightness + (nextSchedule.brightness[brIdx] - schedule.brightness[brIdx]) * minutes / totalMinutes);
                 brightness[brIdx] = curBrightness;
             }
-
+	    ready = true;
         }
-    })
+    }
 
     console.log("autoDmLed: hours=%s, levels=%s", hours, brightness);
 

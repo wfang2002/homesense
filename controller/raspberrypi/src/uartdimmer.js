@@ -10,7 +10,7 @@ var serialPort = new SerialPort("/dev/ttyAMA0", {
 serialPort.on("open", function () {
   console.log('port open');
   serialPort.on('data', function(data) {
-    console.log('data received: ' + data);
+    console.log('UART received: ' + data);
 
     if (cmdQueue.length > 0) {
         var cmd = cmdQueue.shift();
@@ -28,16 +28,15 @@ serialPort.on("open", function () {
 
 
 function setLevels(levels) {
-	console.log("Entering uartdimmer.setLevels()");
-    
+   var cmdStr = "L " + levels.join(',') + "\r\n"; 
     if (busy) {
-        cmdQueue.push("L " + levels.join(',') + "\n");
+        cmdQueue.push(cmdStr);
         return;
     }
     busy = true;
-    serialPort.write("L " + levels.join(',') + "\n", function(err, results) {
+    serialPort.write(cmdStr, function(err, results) {
         if (err)console.log('err ' + err);
-	else console.log("command sent");
+	else console.log("command sent: ", cmdStr);
 	busy = false;
 
         //console.log('results ' + results);
