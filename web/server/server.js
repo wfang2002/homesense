@@ -51,6 +51,21 @@ Meteor.methods({
     unsolicitedResponse: function(details) {
         var ip = headers.methodClientIP(this);
         console.log("Client ip:  ", ip);
+        console.log("Inputs: ", details);
+
+        var fields = details;
+        fields.updated = new Date();
+        var input = Inputs.findOne({device_id: details.device_id});        
+        if (input) {        
+            Inputs.update({_id: input._id}, {$set:fields});
+        } else {
+            fields.created = fields.updated;
+            Inputs.insert(fields);
+        }
+
+        fields.created = fields.updated;
+        InputsHistory.insert(fields);
+
     },
     
     updateMotionSensorEvent: function(details) {

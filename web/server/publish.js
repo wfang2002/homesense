@@ -15,3 +15,7 @@ Meteor.publish("recentComfortData", function(count) {
 Meteor.publish("outputs", function() {
     return Outputs.find();
 })
+
+Meteor.publish("inputs", function() {
+    return Inputs.find();
+})

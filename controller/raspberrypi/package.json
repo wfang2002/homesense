@@ -17,6 +17,7 @@
         "easyimage" : "0.1.3",
         "serialport" : "",
         "ds18x20" : "",
-	    "underscore" : ""
+	    "underscore" : "",
+        "exec-sync" : ""
     }
 }

@@ -7,6 +7,7 @@ insecure
 standard-app-packages
 reststop2
 meteor-server-log4js
+meteor-server-mongodb
 accounts-base
 accounts-password
 email
