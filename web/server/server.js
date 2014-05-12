@@ -58,7 +58,7 @@ Meteor.methods({
         var input = Inputs.findOne({device_id: details.device_id});        
         if (input) {        
             _.each(details.binary_points, function(pt, idx) {
-                if (input.binary_points.length <= idx || pt != input.binary_points[idx]) {
+                if (input.binary_points && input.binary_points.length <= idx && pt != input.binary_points[idx]) {
                     lastChanges = details.lastChanges || {};
                     lastChanges.binary_points = lastChanges.binary_points || [];
                     lastChanges.binary_points[idx] = {ts: new Date(), value:pt};
