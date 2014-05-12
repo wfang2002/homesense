@@ -186,7 +186,7 @@ function autoDimLed(){
             var totalMinutes = ((nextSchedule.hour + 24 - schedule.hour) % 24) * 60;
 
             for (var brIdx = 0; brIdx < schedule.brightness.length; brIdx++) {
-                var curBrightness = parseInt(schedule.brightness + (nextSchedule.brightness[brIdx] - schedule.brightness[brIdx]) * minutes / totalMinutes);
+                var curBrightness = parseInt(schedule.brightness[brIdx] + (nextSchedule.brightness[brIdx] - schedule.brightness[brIdx]) * minutes / totalMinutes);
                 brightness[brIdx] = curBrightness;
             }
 	    ready = true;
