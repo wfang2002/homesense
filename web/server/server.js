@@ -49,7 +49,7 @@ Meteor.startup(function () {
 
 Meteor.methods({
     unsolicitedResponse: function(details) {
-        var ip = headers.methodClientIP(this);
+        var ip = headers.methodClientIP(this, 1);
         console.log("Client ip:  ", ip);
         //console.log("Inputs: ", details);
         details.ip = ip;
