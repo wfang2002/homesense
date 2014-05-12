@@ -14,6 +14,8 @@ var _ = require('underscore');
 
 var workInt;
 var deviceId = "111";
+var lastUpdateTime = new Date();
+var hasUpdateDemand = false;
 
 // local device settings
 var settings = {
@@ -88,10 +90,16 @@ ddpclient.connect(function(error) {
     // wake worker every one minute
     if (workInt)clearInterval(workInt);
     workInt = setInterval(function() {
-        doWork();
-    }, 60000);
+	var now = new Date();
+	if ((hasUpdateDemand && now.getTime() - lastUpdateTime.getTime() > 5000) || 
+		now.getTime() - lastUpdateTime.getTime() >= 60000) { 
+        	doWork();
+		hasUpdateDemand = false;
+		lastUpdateTime = now;
+	}
+    }, 5000);
 
-	doWork();
+
 });
 
 // All subscription events
@@ -105,6 +113,7 @@ ddpclient.on('message', function(msg) {
     if (msg.collection == "outputs") {
 
         handleOutputChanges(msg);
+	hasUpdateDemand = true;
     }
 });
 
