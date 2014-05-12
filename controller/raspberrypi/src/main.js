@@ -88,6 +88,7 @@ ddpclient.connect(function(error) {
         doWork();
     }, 60000);
 
+	doWork();
 });
 
 // All subscription events
@@ -200,8 +201,8 @@ function doWork() {
 }
 
 function readPic(picFile) {
- var fs = Npm.require('fs');
- var path = Npm.require('path');
+ var fs = require('fs');
+ var path = require('path');
 
  var data = fs.readFileSync(picFile);
  var tp = data.toString('base64');
