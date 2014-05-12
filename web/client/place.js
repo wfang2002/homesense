@@ -1,5 +1,34 @@
 var deviceId = "111"; // hard-coded for now
 
+Template.placeview.newUpdate = function() {
+     var input = Inputs.findOne({device_id: deviceId})
+
+    if (!input) return;   
+
+    var result = {lastUpdated: shortTime(input.updated)};
+
+    //     // first 6 analog points are light brightness
+    // var brightness = (input.analog_points[0] + input.analog_points[1] + input.analog_points[2] +
+    //     input.analog_points[3] + input.analog_points[4] + input.analog_points[5]) / 6;
+
+    // var placeStatus = [];
+    // placeStatus.push({label: "Temperature#1", icon: "/icons/temperature-64.png", value: input.analog_points[6] + "°C"});
+    // placeStatus.push({label: "Temperature#2", icon: "/icons/temperature-64.png", value: input.analog_points[7] + "°C"});
+    // placeStatus.push({label: "LED", icon: "/icons/brightness-32.png", value: parseInt(brightness) + "%"});
+
+    // console.log("placeStatus=", placeStatus);
+
+    // result.placeStatus = placeStatus;
+
+    if (input.octet_points && input.octet_points.length > 0) {
+        result.camImg = input.octet_points[0];
+    }
+
+    return result;
+
+}
+
+
 Template.placeview.lastUpdated = function() {
     var input = Inputs.findOne({device_id: deviceId})
 

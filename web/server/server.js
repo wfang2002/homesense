@@ -51,7 +51,7 @@ Meteor.methods({
     unsolicitedResponse: function(details) {
         var ip = headers.methodClientIP(this);
         console.log("Client ip:  ", ip);
-        console.log("Inputs: ", details);
+        //console.log("Inputs: ", details);
 
         var fields = details;
         fields.updated = new Date();
@@ -64,6 +64,7 @@ Meteor.methods({
         }
 
         fields.created = fields.updated;
+        delete fields.octet_points; // don't need image in history yet.
         InputsHistory.insert(fields);
 
     },
