@@ -122,9 +122,10 @@ ddpclient.on('socket-error', function(error) {
     ddp_connected = false;
 });
 
-gpio.open(18, "input", function(err) {
+var pirPort = 18;
+gpio.close(pirPort);
+gpio.open(pirPort, "input", function(err) {
     var lastStat = 0;
-    var pirPort = 18;
     setInterval(function(){
       gpio.read(pirPort, function(err, value){
         if (lastStat != value) {

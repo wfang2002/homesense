@@ -52,12 +52,21 @@ Meteor.methods({
         var ip = headers.methodClientIP(this);
         console.log("Client ip:  ", ip);
         //console.log("Inputs: ", details);
-
+        details.ip = ip;
         var fields = details;
         fields.updated = new Date();
         var input = Inputs.findOne({device_id: details.device_id});        
         if (input) {        
+            _.each(details.binary_points, function(pt, idx) {
+                if (input.binary_points.length <= idx || pt != input.binary_points[idx]) {
+                    lastChanges = details.lastChanges || {};
+                    lastChanges.binary_points = lastChanges.binary_points || [];
+                    lastChanges.binary_points[idx] = {ts: new Date(), value:pt};
+                    details.lastChanges = lastChanges;
+                }
+            })
             Inputs.update({_id: input._id}, {$set:fields});
+
         } else {
             fields.created = fields.updated;
             Inputs.insert(fields);
