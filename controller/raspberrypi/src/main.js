@@ -8,6 +8,7 @@ var easyimg = require('easyimage');
 var uartDimmer = require('./uartdimmer.js');
 var tempSensors = require('./ds18b20.js')
 var execSync = require('exec-sync'); 
+var gpio = require("pi-gpio");
 
 var _ = require('underscore');
 
@@ -34,6 +35,8 @@ var dimSchedule = [
 ];
 
 var tempIds = [ '28-000002391385', '28-00000248a63f' ];
+
+var pirEvents = [];
 
 getHash = function(str) {
     var shasum = Crypto.createHash("sha1");
@@ -119,6 +122,25 @@ ddpclient.on('socket-error', function(error) {
     ddp_connected = false;
 });
 
+gpio.open(18, "input", function(err) {
+    var lastStat = 0;
+    var pirPort = 18;
+    setInterval(function(){
+      gpio.read(pirPort, function(err, value){
+        if (lastStat != value) {
+            console.log("PIR changed: ", value);
+            lastStat = value;
+            if (value) {    // active (high)
+
+                pirEvents.push(new Date());
+
+            }  
+        }
+      })
+    }, 1000);
+})
+
+
 function dimLed(levels){
     console.log("Dimming LED: ", levels);
     uartDimmer.setLevels(levels);
@@ -192,21 +214,34 @@ function doWork() {
     var response = {device_id: deviceId, analog_points:values};
     console.log("values=", values);
 
+    // load camera image
     var imgTmpFile = '/home/pi/homesene_cap.jpg';
-    var resp = execSync('raspistill -t 1 -w 300 -h 200 -rot 180 -o ' + imgTmpFile);
+    var resp = execSync('raspistill -t 1 -w 600 -h 400 -rot 180 -o ' + imgTmpFile);
     var img = readPic(imgTmpFile);
-    response.octet_points = [img];
+    if (img)response.octet_points = [img];    
+
+    // check pir
+    if (pirEvents.length > 0) {
+        response.binary_points = [1];
+        pirEvents = [];
+    } else {
+        response.binary_points = [0];
+    }
 
     if (ddp_connected)ddpclient.call("unsolicitedResponse", [response], function(err, result){}); 
 }
 
 function readPic(picFile) {
- var fs = require('fs');
- var path = require('path');
+    try {
+        var fs = require('fs');
+        var path = require('path');
 
- var data = fs.readFileSync(picFile);
- var tp = data.toString('base64');
- return 'data:image/jpeg;base64,' + tp;
+        var data = fs.readFileSync(picFile);
+        var tp = data.toString('base64');        
+        return 'data:image/jpeg;base64,' + tp;        
+    } catch (e) {
+        console.log("Failed to open file: ", picFile);
+    }
 }
 
 

@@ -18,6 +18,7 @@
         "serialport" : "",
         "ds18x20" : "",
 	    "underscore" : "",
-        "exec-sync" : ""
+        "exec-sync" : "",
+        "pi-gpio": ""
     }
 }
