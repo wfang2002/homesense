@@ -47,7 +47,13 @@ Template.analogHistory.rendered = function() {
 	        },          
 	        yAxis: [
 	            {
-	                title: {text: '°C'},
+	                title: {
+	                	//text: '°C', 
+	                	align:'high',
+	                	offset: 0,
+	                	rotation: 0,
+	                	y: 15
+	                },
 	                min: 22,
 	                max: 29
 	            }]
