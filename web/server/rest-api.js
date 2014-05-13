@@ -210,7 +210,7 @@ RESTstop.add(
         _.each(results, function(result) {
             _.each(points, function(pointIdx) {
                 if (!rows[pointIdx])rows[pointIdx] = [];
-                rows[pointIdx].push('[' + result.ts + ',' + result.analog_points[pointIdx].avg + ']')
+                rows[pointIdx].push('[' + result.ts + ',' + result.analog_points[pointIdx].avg.toFixed(1) + ']')
             }) 
         })
 

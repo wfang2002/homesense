@@ -68,7 +68,10 @@ Template.analogHistory.rendered = function() {
 	            name: 'Temperature#2',
 	            type:'spline',
 	            data: s2
-	        }]
+	        }],
+	        tooltip:{
+                valueSuffix:'°C'
+            }
 	    });
 	      });
 	})

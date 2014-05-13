@@ -161,6 +161,7 @@ Meteor.methods({
         delete fields.octet_points; // don't need image in history yet.
         InputsHistory.insert(fields);
 
+        aggregateInputs(details.device_id);
     },
     
     updateMotionSensorEvent: function(details) {
