@@ -2,36 +2,35 @@
 var output;
 
 Template.lightdimmer.created = function() {
-
+    console.log("Enter Template.lightdimmer.created");
 
 }
 
 Template.lightdimmer.rendered = function() {
 
-    console.log("Enter Template.lightdimmer.rendered");
+    console.log("Enter Template.lightdimmer.rendered,");
 
-    //$(".dimming-slider").slider("option", "disabled", true);
-    // Force refresh jQuery Mobile elements
-    $('#lightdimmer-content').trigger('create');
+    $(this.firstNode).on("pageinit", function(evt) {
+        console.log("light page init!");
+        Deps.autorun(function() {
+            output = Outputs.findOne({device_id:"111"});
 
-    Deps.autorun(function() {
-        output = Outputs.findOne({device_id:"111"});
+            if (!output) return;
 
-        if (!output) return;
+            console.log("output changed: ", output);
 
-        console.log("output changed: ", output);
+            var isManual = false;
+            if (output && output.binary_points[0]) isManual = true;
 
-        var isManual = false;
-        if (output && output.binary_points[0]) isManual = true;
-
-        //if ($("#flip-manual-control").length)
-        //$("#flip-manual-control.ui-flipswitch-input").flipswitch("option", "checked", isManual).flipswitch( "refresh" );
-        $("#flip-manual-control").prop("checked", isManual ? "checked" : "");
-        $("#flip-manual-control").flipswitch( "refresh" );
-        _.each(output.analog_points, function(value, index) {
-            var selector = "#slider-" + index;
-            $(selector).val(value);
-            $(selector).slider("refresh");
+            //if ($("#flip-manual-control").length)
+            //$("#flip-manual-control.ui-flipswitch-input").flipswitch("option", "checked", isManual).flipswitch( "refresh" );
+            $("#flip-manual-control").prop("checked", isManual ? "checked" : "");
+            $("#flip-manual-control").flipswitch( "refresh" );
+            _.each(output.analog_points, function(value, index) {
+                var selector = "#slider-" + index;
+                $(selector).val(value);
+                $(selector).slider("refresh");
+            })
         })
     })
 }

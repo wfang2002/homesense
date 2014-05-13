@@ -12,10 +12,11 @@
 
 <body>
 
+<div id="pageholder"> </div>
 
 <div class="page" data-role="page" id="home" data-theme="a">
     <div data-role="header" data-position="inline">
-         <h1>My Fish Tank</h1>
+         <h1>Fish Tank</h1>
          
     </div>
     {{>placeview}}
@@ -24,21 +25,13 @@
         <li class="">
             <a href="#light-page" data-transition="slide">Light Control</a>
         </li>
-
     </ul>
 
 </div>
 
-<div class="page" data-role="page" id="light-page" data-theme="a" data-add-back-btn="true">
-    <div data-role="header" data-position="inline">
-         <h1>Light Control</h1>
-         <a href="#" data-role="button" data-rel="back" data-icon="arrow-l">Back</a>
-    </div>
-    {{> lightdimmer}}
-<!--     <div data-role="footer">
-        <h4>Page Footer</h4>
-    </div> -->
-</div>
+{{> lightdimmer}}
+
+{{> analogHistory}}
 
 <div class="page" data-role="page" id="motion" data-theme="">
     {{> header}}

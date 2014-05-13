@@ -2,9 +2,29 @@
     <div class="page" data-role="page" id="analog-page" data-theme="a" data-add-back-btn="true">
         <div data-role="header" data-position="inline">
              <h1>Analog History</h1>
-             <a href="#" data-role="button" data-rel="back" data-icon="arrow-l">Back</a>
+             <a href="#" data-role="button" data-rel="back" data-icon="arrow-l" data-direction="reverse">Back</a>
         </div>
         <div>
+        	Line1: {{value}}
         </div>
+
+        <form>
+            <input type="checkbox" data-role="flipswitch" name="flip-checkbox-2" id="flip-manual-control2" data-on-text="Manual" data-off-text="Auto" data-wrapper-class="custom-size-flipswitch">
+        </form>
+
+        <form >
+            <label for="slider-1">Channel #1:</label>
+            <input type="range" name="slider-1" id="aslider-0" class="dimming-slider" data-point-index="0" data-highlight="true" min="0" max="100" value="50" disabled="disabled">
+            <label for="slider-2">Channel #2:</label>
+            <input type="range" name="slider-2" id="aslider-1" class="dimming-slider" data-point-index="1" data-highlight="true" min="0" max="100" value="50" disabled="disabled">
+            <label for="slider-3">Channel #3:</label>
+            <input type="range" name="slider-3" id="aslider-2" class="dimming-slider" data-point-index="2" data-highlight="true" min="0" max="100" value="50" disabled="disabled">
+            <label for="slider-4">Channel #4:</label>
+            <input type="range" name="slider-4" id="aslider-3" class="dimming-slider" data-point-index="3" data-highlight="true" min="0" max="100" value="50" disabled="disabled">
+            <label for="slider-5">Channel #5:</label>
+            <input type="range" name="slider-5" id="aslider-4" class="dimming-slider" data-point-index="4" data-highlight="true" min="0" max="100" value="50" disabled="disabled">
+            <label for="slider-6">Channel #6:</label>
+            <input type="range" name="slider-6" id="aslider-5" class="dimming-slider" data-point-index="5" data-highlight="true" min="0" max="100" value="50" disabled="disabled">
+        </form>
     </div>
 </template>
