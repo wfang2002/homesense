@@ -11,6 +11,12 @@ Template.analogHistory.rendered = function() {
 
 	    })
 
+	    Highcharts.setOptions({
+	        global: {
+	            useUTC: false
+	        }
+	    });
+
 	    var deviceId = "111";
 	    var queryStr = '/api/history_data?points=6,7&device_id=' + deviceId + '&callback=?'
 	    $.getJSON(queryStr, function (data) {
@@ -18,7 +24,7 @@ Template.analogHistory.rendered = function() {
 	        var s1 = data[0];
 	        var s2 = data[1];
 
-	    $('#histChart').highcharts({
+	    $('#histChart').highcharts('StockChart', {
 	        plotOptions: {
 	                line: {
 	                    connectNulls: true
@@ -41,7 +47,9 @@ Template.analogHistory.rendered = function() {
 	        },          
 	        yAxis: [
 	            {
-	                title: {text: '°C'}
+	                title: {text: '°C'},
+	                min: 22,
+	                max: 29
 	            }]
 	        ,
 	        legend: {
@@ -53,12 +61,21 @@ Template.analogHistory.rendered = function() {
 	            x: -20
 	        },
 	        rangeSelector: {
-	                selected: 1
-	              },
-	        navigator: {
-	                enabled: true,
-	                height: 25
-	              },
+                buttons: [{
+        				count: 1,
+        				type: 'day',
+        				text: '1D'
+        			}, {
+        				count: 1,
+        				type: 'week',
+        				text: '1W'
+        			}, {
+        				type: 'all',
+        				text: 'All'
+        			}],
+        			inputEnabled: false,
+        			selected: 0
+              },
 	        series: [{
 	            name: 'Temperature#1',
 	            type:'spline',
