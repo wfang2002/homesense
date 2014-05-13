@@ -52,6 +52,13 @@ Template.analogHistory.rendered = function() {
 	            floating: true,
 	            x: -20
 	        },
+	        rangeSelector: {
+	                selected: 1
+	              },
+	        navigator: {
+	                enabled: true,
+	                height: 25
+	              },
 	        series: [{
 	            name: 'Temperature#1',
 	            type:'spline',
