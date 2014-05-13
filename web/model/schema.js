@@ -30,3 +30,5 @@ InputsHistory = new Meteor.Collection("inputs_history");
 // Aggregated input history log
 // Aggregate types: 5 minutes, 30 minutes, 1 hour
 InputsAggregated = new Meteor.Collection("inputs_aggregated");
+
+SysStatus = new Meteor.Collection("system_status");

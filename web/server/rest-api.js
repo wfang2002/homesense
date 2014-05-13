@@ -177,6 +177,59 @@ RESTstop.add(
     }
 );
 
+RESTstop.add(
+    '/history_data', ["POST", "GET"], function () {
+        //logger.info("Request: ", this.request);
+        var method = this.request.method;
+        var header = this.request.header;
+        var query = this.request.query;
+        var body = this.request.body;
+        var clientIp = getClientAddress(this.request);
+
+        this.response.setHeader('Content-Type', 'text/javascript');
+
+        logger.info("Request method: ", method);
+        logger.info("Request header: ", header);
+        logger.info("Request query: ", query);
+        logger.info("Received request: ", this.request.url);
+        logger.info("Request body: ", body);
+
+        var callback = query.callback;
+        var points = query.points.split(',');
+        var start = query.start || new Date(2014, 4, 1);
+        var end = query.ed || new Date();
+
+        var type = '60';    // default hourly data
+        if (end.getTime() - start.getTime() < 24*60*60000) type = '5';  // 5 minute data
+
+        var results = InputsAggregated.find({device_id:query.device_id || "unknown", type:type, ts: {$gte:start.getTime(), $lte:end.getTime()}}).fetch();
+
+        console.log("Found %s results", results.length);
+
+        var rows = {};
+        _.each(results, function(result) {
+            _.each(points, function(pointIdx) {
+                if (!rows[pointIdx])rows[pointIdx] = [];
+                rows[pointIdx].push('[' + result.ts + ',' + result.analog_points[pointIdx].avg + ']')
+            }) 
+        })
+
+        var sRows = [];
+        _.each(rows, function(row) {
+            sRows.push('[' + row.join(',') + ']');
+        })
+        var response = callback + '([' + sRows.join(',') + ']);';
+
+        console.log("Response=", response)
+
+        if (query.pretty) {
+            return JSON.stringify(response, null, 4);
+        }
+
+        //return EJSON.stringify(response);
+        return response;
+    }
+);
 
 RESTstop.add(
     '/echo', ["POST", "GET"], function () {

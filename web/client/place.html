@@ -13,8 +13,10 @@
         <ul id="place-status-list" data-role="listview">
             {{#each placeStatus}}
             <li data-role="fieldcontain" class="ui-li-has-icon">
+                <a href="#analog-page" data-transition="slide">
                 <img src="{{icon}}" class="ui-li-icon">
                 <span>{{value}}</span>
+                </a>
             </li>
             {{/each}}
         </ul>

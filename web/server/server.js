@@ -45,7 +45,92 @@ Meteor.startup(function () {
 
     aggregateEnabler();
 
+    aggregateInputs("111");
+
 });
+
+
+function aggregateRec(dataSet, rec) {
+    _.each(rec.binary_points, function(val, idx) {
+        dataSet.binary_points = dataSet.binary_points || [];
+        dataSet.binary_points[idx] = (dataSet.binary_points[idx] || 0) + 1;
+    })
+
+    _.each(rec.analog_points, function(val, idx) {
+        dataSet.analog_points = dataSet.analog_points || [];
+        dataSet.analog_points[idx] = dataSet.analog_points[idx] || {sum:0, count:0, avg:0};
+        dataSet.analog_points[idx].sum += val;
+        dataSet.analog_points[idx].count++;
+        dataSet.analog_points[idx].avg = dataSet.analog_points[idx].sum / dataSet.analog_points[idx].count;
+    })
+}
+
+function aggregateInputs(deviceId) {
+    var aggStatus = SysStatus.findOne({device_id: deviceId});
+
+
+    var filter = {device_id: deviceId};
+    if (!aggStatus)aggStatus = {device_id: deviceId};
+    else filter.created = {$gt:aggStatus.lastTs};
+
+    aggStatus.lastTs = new Date();
+
+    var inputs = InputsHistory.find(filter, {sort:{created:1}}).fetch();
+
+    var aggHours = {};  // store hourly aggregate result
+    var aggMinute5 = {};    // store 5-minute aggregate result
+
+    _.each(inputs, function(rec) {
+        var hourTs = new Date(rec.created.getFullYear(), rec.created.getMonth(), rec.created.getDate(), rec.created.getHours()).getTime();
+        var minute5Ts = hourTs + parseInt(rec.created.getMinutes()/5)*5*60000;
+
+        console.log("HourTs=%s, minute5Ts=%s", new Date(hourTs), new Date(minute5Ts));
+
+        // aggregate hourly data
+        if (!aggHours[hourTs]) {
+            aggHours[hourTs] = InputsAggregated.findOne({device_id:deviceId, type:"60", ts:hourTs}) || {device_id:deviceId, type:"60", ts:hourTs};
+        }
+
+        aggregateRec(aggHours[hourTs], rec);
+
+
+        if (!aggMinute5[minute5Ts]) {
+            aggMinute5[minute5Ts] = InputsAggregated.findOne({device_id:deviceId, type:"5", ts:hourTs}) || {device_id:deviceId, type:"5", ts:hourTs};            
+        }
+
+        aggregateRec(aggMinute5[minute5Ts], rec);
+
+    })
+
+    //Insert/Update aggregated data
+    _.each(aggHours, function(fields) {
+        if (fields._id) {
+            var id = fields._id;
+            delete fields._id;
+            InputsAggregated.update({_id:id}, {$set:fields});
+        } else {
+            InputsAggregated.insert(fields);
+        }
+    })
+
+    _.each(aggMinute5, function(fields) {
+        if (fields._id) {
+            var id = fields._id;
+            delete fields._id;
+            InputsAggregated.update({_id:id}, {$set:fields});
+        } else {
+            InputsAggregated.insert(fields);
+        }
+    })
+
+    if (aggStatus._id) {
+        var id = aggStatus._id;
+        delete aggStatus._id;
+        SysStatus.update({_id:id}, {$set:aggStatus});
+    } else {
+        SysStatus.insert(aggStatus);
+    }
+}
 
 Meteor.methods({
     unsolicitedResponse: function(details) {
