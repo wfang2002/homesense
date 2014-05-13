@@ -47,9 +47,9 @@ Template.placeview.placeStatus = function() {
         input.analog_points[3] + input.analog_points[4] + input.analog_points[5]) / 6;
 
     var result = [];
-    result.push({label: "Temperature#1", icon: "/icons/temperature-64.png", value: input.analog_points[6] + "°C"});
-    result.push({label: "Temperature#2", icon: "/icons/temperature-64.png", value: input.analog_points[7] + "°C"});
-    result.push({label: "LED", icon: "/icons/brightness-32.png", value: parseInt(brightness) + "%"});
+    result.push({label: "Temperature#1", icon: "/icons/temperature-64.png", chartUrl:"#analog-page", value: input.analog_points[6] + "°C"});
+    result.push({label: "Temperature#2", icon: "/icons/temperature-64.png", chartUrl: "#analog-page", value: input.analog_points[7] + "°C"});
+    result.push({label: "LED", icon: "/icons/brightness-32.png", chartUrl: "#light-chart-page", value: parseInt(brightness) + "%"});
 
     var lastDetected = (input.lastChanges && input.lastChanges.binary_points) ? shortTime(input.lastChanges.binary_points[0].ts) : ""; 
     result.push({label: "PIR", icon: "/icons/motion-64.png", value: "last detected at " + lastDetected });
