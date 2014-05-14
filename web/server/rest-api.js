@@ -195,8 +195,8 @@ RESTstop.add(
         logger.info("Request body: ", body);
 
         var callback = query.callback;
-        var points = (query.points ||"").split(',');
-        var binaryPoints = (query.binary_points || "").split(',');
+        var points = query.points ? query.points.split(',') || [];
+        var binaryPoints = query.binary_points ? query.binary_points.split(',') || [];
         var start = query.start || new Date(2014, 4, 1);
         var end = query.ed || new Date();
 
