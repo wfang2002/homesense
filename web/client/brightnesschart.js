@@ -1,6 +1,4 @@
-Template.brightnessHistory.value = function() {
-	return "Hello world!";
-}
+var deviceId = "111";
 
 Template.brightnessHistory.rendered = function() {
 	console.log("Entering brightnessHistory.rendered");
@@ -17,7 +15,6 @@ Template.brightnessHistory.rendered = function() {
 	        }
 	    });
 
-	    var deviceId = "111";
 	    var queryStr = '/api/history_data?points=0,1,2,3,4,5&device_id=' + deviceId + '&callback=?'
 	    $.getJSON(queryStr, function (data) {
 	        console.log(data);
@@ -26,22 +23,23 @@ Template.brightnessHistory.rendered = function() {
 
 	    $('#lightChart').highcharts('StockChart', {
 	    	chart: {
-	    	                type: 'area'
-	    	            },
+	    	    type: 'area',
+	    	    zoomType: 'x'
+	        },
 	    	plotOptions: {
-	    	                area: {
-	    	                    stacking: 'normal',
-	    	                    lineColor: '#666666',
-	    	                    lineWidth: 1,
-	    	                    // marker: {
-	    	                    //     lineWidth: 1,
-	    	                    //     lineColor: '#666666'
-	    	                    // }
-	    	                },
-	    	                areaspline: {
-	    	                                    fillOpacity: 0.5
-	    	                                }
-	    	            },
+	            area: {
+	                stacking: 'normal',
+	                lineColor: '#666666',
+	                lineWidth: 1,
+	                // marker: {
+	                //     lineWidth: 1,
+	                //     lineColor: '#666666'
+	                // }
+	            },
+	            areaspline: {
+                    fillOpacity: 0.5
+                    }
+            },
 	        title: {
 	            text: '',
 	            x: -20 //center
@@ -56,6 +54,10 @@ Template.brightnessHistory.rendered = function() {
 	                month: '%e. %b',
 	                year: '%b'
 	            },
+	            events : {
+	                afterSetExtremes : afterSetExtremes
+	            },
+	            minRange: 3600 * 1000 // one hour
 	        },          
 	        yAxis: [
 	            {
@@ -78,8 +80,21 @@ Template.brightnessHistory.rendered = function() {
 	            floating: true,
 	            x: -20
 	        },
+	        navigator : {
+	            adaptToUpdatedData: false,
+	            series : {
+	                data : s1
+	            }
+	        },
+	        scrollbar: {
+	            liveRedraw: false   // avoid redraw while dragging navigator
+	        },
 	        rangeSelector: {
                 buttons: [{
+                        count: 1,
+                        type: 'hour',
+                        text: '1h'
+                    },{
         				count: 1,
         				type: 'day',
         				text: '1D'
@@ -92,7 +107,7 @@ Template.brightnessHistory.rendered = function() {
         				text: 'All'
         			}],
         			inputEnabled: false,
-        			selected: 0
+        			selected: 1
               },
 	        series: [{
 	            name: 'ch#1',
@@ -136,4 +151,31 @@ Template.brightnessHistory.rendered = function() {
 	    });
 	      });
 	})
+}
+
+/**
+ * Load new data depending on the selected min and max
+ */
+function afterSetExtremes(e) {
+
+    var currentExtremes = this.getExtremes(),
+        range = e.max - e.min,
+        chart = $('#lightChart').highcharts('StockChart');
+       
+    chart.showLoading('Loading data...');
+    var queryStr = '/api/history_data?points=0,1,2,3,4,5&device_id=' + deviceId + 
+        '&start='+ Math.round(e.min) +
+        '&end='+ Math.round(e.max) + 
+        '&callback=?';
+    $.getJSON(queryStr, function(data) {
+        
+        chart.series[0].setData(data[0]);
+        chart.series[1].setData(data[1]);
+        chart.series[2].setData(data[2]);
+        chart.series[3].setData(data[3]);
+        chart.series[4].setData(data[4]);
+        chart.series[5].setData(data[5]);
+        chart.hideLoading();
+    });
+    
 }

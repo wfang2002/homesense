@@ -197,13 +197,15 @@ RESTstop.add(
         var callback = query.callback;
         var points = query.points ? query.points.split(',') : [];
         var binaryPoints = query.binary_points ? query.binary_points.split(',') : [];
-        var start = query.start || new Date(2014, 4, 1);
-        var end = query.ed || new Date();
+        var end = query.end ? parseInt(query.end) : new Date().getTime();
+        var start = query.start ? parseInt(query.start) : (end - 30*24*60*60000); //default last 30
+
+        //console.log("start: %s, end: %s", new Date(start), new Date(end));
 
         var interval = '60';    // default hourly data
-        if (end.getTime() - start.getTime() < 24*60*60000) interval = '5';  // 5 minute data
+        if (end - start < 24*60*60000) interval = '5';  // 5 minute data
 
-        var results = InputsAggregated.find({device_id:query.device_id || "unknown", type:interval, ts: {$gte:start.getTime(), $lte:end.getTime()}}).fetch();
+        var results = InputsAggregated.find({device_id:query.device_id || "unknown", type:interval, ts: {$gte:start, $lte:end}}, {sort:{ts:1}}).fetch();
 
         console.log("Found %s results", results.length);
 
@@ -213,16 +215,18 @@ RESTstop.add(
             _.each(binaryPoints, function(pointIdx) {
                 var key = '1' + pointIdx;
                 if (!rows[key])rows[key] = [];
-                if (result.binary_points && result.binary_points.length > pointIdx)
-                    rows[key].push('[' + result.ts + ',' + result.binary_points[pointIdx] + ']')
+                if (result.binary_points && result.binary_points.length > pointIdx) {
+                    rows[key].push('[' + result.ts + ',' + result.binary_points[pointIdx] + ']');
+                }
             }) 
 
             //append analog points
             _.each(points, function(pointIdx) {
                 var key = '2' + pointIdx;   // add prefix '2' to avoid conflict with binary points
                 if (!rows[key])rows[key] = [];
-                if (result.analog_points && result.analog_points.length > pointIdx)
-                    rows[key].push('[' + result.ts + ',' + result.analog_points[pointIdx].avg.toFixed(1) + ']')
+                if (result.analog_points && result.analog_points.length > pointIdx) {
+                    rows[key].push('[' + result.ts + ',' + result.analog_points[pointIdx].avg.toFixed(1) + ']')                    
+                }
             }) 
         })
 
@@ -232,7 +236,7 @@ RESTstop.add(
         })
         var response = callback + '([' + sRows.join(',') + ']);';
 
-        console.log("Response=", response)
+        //console.log("Response=", response)
 
         if (query.pretty) {
             return JSON.stringify(response, null, 4);

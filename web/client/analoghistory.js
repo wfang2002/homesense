@@ -1,6 +1,4 @@
-Template.analogHistory.value = function() {
-	return "Hello world!";
-}
+var deviceId = "111";
 
 Template.analogHistory.rendered = function() {
 	console.log("Entering analogHistory.rendered");
@@ -17,7 +15,6 @@ Template.analogHistory.rendered = function() {
 	        }
 	    });
 
-	    var deviceId = "111";
 	    var queryStr = '/api/history_data?points=6,7&device_id=' + deviceId + '&callback=?'
 	    $.getJSON(queryStr, function (data) {
 	        console.log(data);
@@ -25,6 +22,9 @@ Template.analogHistory.rendered = function() {
 	        var s2 = data[1];
 
 	    $('#histChart').highcharts('StockChart', {
+    		chart: {
+    		    zoomType: 'x'
+    	    },
 	        plotOptions: {
 	                line: {
 	                    connectNulls: true
@@ -44,6 +44,10 @@ Template.analogHistory.rendered = function() {
 	                month: '%e. %b',
 	                year: '%b'
 	            },
+	            events : {
+	                afterSetExtremes : afterSetExtremes
+	            },
+	            minRange: 3600 * 1000 // one hour
 	        },          
 	        yAxis: [
 	            {
@@ -66,8 +70,21 @@ Template.analogHistory.rendered = function() {
 	            floating: true,
 	            x: -20
 	        },
+	        navigator : {
+	            adaptToUpdatedData: false,
+	            series : {
+	                data : s1
+	            }
+	        },
+	        scrollbar: {
+	            liveRedraw: false   // avoid redraw while dragging navigator
+	        },
 	        rangeSelector: {
                 buttons: [{
+                        count: 1,
+                        type: 'hour',
+                        text: '1h'
+                    },{
         				count: 1,
         				type: 'day',
         				text: '1D'
@@ -80,7 +97,7 @@ Template.analogHistory.rendered = function() {
         				text: 'All'
         			}],
         			inputEnabled: false,
-        			selected: 0
+        			selected: 1
               },
 	        series: [{
 	            name: 'Temperature#1',
@@ -98,4 +115,27 @@ Template.analogHistory.rendered = function() {
 	    });
 	      });
 	})
+}
+
+/**
+ * Load new data depending on the selected min and max
+ */
+function afterSetExtremes(e) {
+
+    var currentExtremes = this.getExtremes(),
+        range = e.max - e.min,
+        chart = $('#histChart').highcharts('StockChart');
+       
+    chart.showLoading('Loading data...');
+    var queryStr = '/api/history_data?points=6,7&device_id=' + deviceId + 
+        '&start='+ Math.round(e.min) +
+        '&end='+ Math.round(e.max) + 
+        '&callback=?';
+    $.getJSON(queryStr, function(data) {
+        
+        chart.series[0].setData(data[0]);
+        chart.series[1].setData(data[1]);
+        chart.hideLoading();
+    });
+    
 }

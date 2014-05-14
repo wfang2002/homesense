@@ -53,7 +53,7 @@ Meteor.startup(function () {
 function aggregateRec(dataSet, rec) {
     _.each(rec.binary_points, function(val, idx) {
         dataSet.binary_points = dataSet.binary_points || [];
-        dataSet.binary_points[idx] = (dataSet.binary_points[idx] || 0) + 1;
+        dataSet.binary_points[idx] = (dataSet.binary_points[idx] || 0) + (val ? 1 :0);
     })
 
     _.each(rec.analog_points, function(val, idx) {
@@ -68,9 +68,14 @@ function aggregateRec(dataSet, rec) {
 function aggregateInputs(deviceId) {
     var aggStatus = SysStatus.findOne({device_id: deviceId});
 
-
     var filter = {device_id: deviceId};
-    if (!aggStatus)aggStatus = {device_id: deviceId};
+    var aggrVer = '1.0'
+    if (!aggStatus || aggStatus.version != aggrVer) {
+        aggStatus = aggStatus || {device_id: deviceId};
+        aggStatus.version = aggrVer;
+        InputsAggregated.remove({device_id: deviceId});
+        console.log("reset aggregate data of device: ", deviceId);
+    }
     else filter.created = {$gt:aggStatus.lastTs};
 
     aggStatus.lastTs = new Date();
@@ -84,7 +89,7 @@ function aggregateInputs(deviceId) {
         var hourTs = new Date(rec.created.getFullYear(), rec.created.getMonth(), rec.created.getDate(), rec.created.getHours()).getTime();
         var minute5Ts = hourTs + parseInt(rec.created.getMinutes()/5)*5*60000;
 
-        console.log("HourTs=%s, minute5Ts=%s", new Date(hourTs), new Date(minute5Ts));
+        //console.log("HourTs=%s, minute5Ts=%s", new Date(hourTs), new Date(minute5Ts));
 
         // aggregate hourly data
         if (!aggHours[hourTs]) {
@@ -95,7 +100,7 @@ function aggregateInputs(deviceId) {
 
 
         if (!aggMinute5[minute5Ts]) {
-            aggMinute5[minute5Ts] = InputsAggregated.findOne({device_id:deviceId, type:"5", ts:hourTs}) || {device_id:deviceId, type:"5", ts:hourTs};            
+            aggMinute5[minute5Ts] = InputsAggregated.findOne({device_id:deviceId, type:"5", ts:minute5Ts}) || {device_id:deviceId, type:"5", ts:minute5Ts};            
         }
 
         aggregateRec(aggMinute5[minute5Ts], rec);
