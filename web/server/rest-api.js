@@ -213,14 +213,16 @@ RESTstop.add(
             _.each(binaryPoints, function(pointIdx) {
                 var key = '1' + pointIdx;
                 if (!rows[key])rows[key] = [];
-                rows[key].push('[' + result.ts + ',' + result.binary_points[pointIdx] + ']')
+                if (result.binary_points && result.binary_points.length > pointIdx)
+                    rows[key].push('[' + result.ts + ',' + result.binary_points[pointIdx] + ']')
             }) 
 
             //append analog points
             _.each(points, function(pointIdx) {
                 var key = '2' + pointIdx;   // add prefix '2' to avoid conflict with binary points
                 if (!rows[key])rows[key] = [];
-                rows[key].push('[' + result.ts + ',' + result.analog_points[pointIdx].avg.toFixed(1) + ']')
+                if (result.analog_points && result.analog_points.length > pointIdx)
+                    rows[key].push('[' + result.ts + ',' + result.analog_points[pointIdx].avg.toFixed(1) + ']')
             }) 
         })
 
