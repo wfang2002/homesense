@@ -1,206 +1,91 @@
-var liveChart  = true;      // if true then each refresh will adjust data end time to current time.
-var hourlyChart;    // jqPlot handle
-var hourlySerialData = []; //data
-var hourlyChartStart;
-var hourlyChartEnd = new Date();
+Template.motionHistory.rendered = function() {
+    console.log("Entering motionHistory.rendered");
 
-Template.motion.motionEvents = function() {
-    return MotionSensorEvents.find({status:'1'}, {sort:{updated:-1}, limit:5});
-}
+    $(this.firstNode).on("pageinit", function(evt) {
+        console.log("motionHistory page init!");
+        Deps.autorun(function() {
 
-Template.motion.status = function() {
-    var event = this;
-    if (event.status === '1') {
-        return "On"
-    } else {
-        return 'Off';
-    }
-}
+        })
 
-Template.motion.location = function() {
-    var event = this;
-    // TODO: get location name from db
-    if (event.station_id == '0') {
-        return 'Family Room';
-    } else {
-        return event.station_id;
-    }
-}
-
-Template.motion.hourlyEvents = function() {
-
-    var events = MotionSensorEvents.find({status:"1"}, {sort:{updated:-1}, limit:200}).fetch();
-
-    var list = {};
-    _.each(events, function(event) {
-        var time = event.updated.format("MM-dd, hh:00");
-        if (list[time]) {
-            list[time].count ++;
-        }
-        else {
-            list[time] = {hour:time, count:1};
-        }
-        //console.log('list[%s]=%s', time, list[time]);
-
-    });
-
-    return _.first(_.map(list, function(val, key){return val}), 12);
-
-}
-
-Template.motion.created = function() {
-    hourlyChart = null;
-    $(window).resize(function(evt) {
-        showHourlyChart();
-    });
-}
-
-Template.motion.rendered = function() {
-
-    if (liveChart) {
-        hourlyChartEnd = new Date();
-    }
-
-    refreshHourlyChart();
-
-    // Force refresh jQuery Mobile elements
-    $('#motion-content').trigger('create');
-}
-
-
-Template.motion.events({
-    'click #btn-prev':function(evt, tmpl) {
-        evt.stopPropagation();
-        evt.preventDefault();
-
-        console.log("show prev day chart");
-        var now = new Date();
-        var next = hourlyChartEnd.getTime() - 24*60*60000;
-        if (next > now.getTime()) next = now.getTime;
-        liveChart = false;
-        hourlyChartEnd = new Date(next);
-        refreshHourlyChart();
-    },
-
-    'click #btn-next':function(evt, tmpl) {
-        evt.stopPropagation();
-        evt.preventDefault();
-
-        console.log("show next day chart");
-        var now = new Date();
-        var next = hourlyChartEnd.getTime() + 24*60*60000;
-        if (next > now.getTime()) {
-            next = now.getTime();
-            liveChart = true;
-        }
-        hourlyChartEnd = new Date(next);
-        refreshHourlyChart();
-    }
-})
-
-Template.motion.helpers({
-    shortTime: function(time) {
-        return shortTime(time);
-    }
-})
-
-function getHourlyStatAsync(tsStart, tsEnd, callback) {
-
-    console.log("Current hour:", tsEnd.getHours());
-
-    tsStart.setMinutes(0);
-    tsStart.setSeconds(0);
-    tsEnd.setMinutes(59);
-    tsEnd.setSeconds(59);
-
-    // Initialize hourly buffer
-    var list = {};
-    for (var ts = tsStart.getTime(); ts <= tsEnd.getTime();) {
-
-        var label;
-        var date = new Date(ts);
-        label = date.format("MMddhh");
-        list[label] = {count:0, ts:ts};
-        ts = ts + 60*60000;
-    }
-
-    // Fill in hourly count
-    Meteor.call('getMotionEventsAggregate', tsStart, tsEnd, function(err, events) {
-        _.each(events, function(event) {
-
-            var date = event._id;
-            var label;
-            label = date.format("MMddhh");
-            list[label].count = event.count;
-
+        Highcharts.setOptions({
+            global: {
+                useUTC: false
+            }
         });
 
-        if(callback)callback(err, list);
-    })
-}
+        var deviceId = "111";
+        var queryStr = '/api/history_data?binary_points=0&device_id=' + deviceId + '&callback=?'
+        $.getJSON(queryStr, function (data) {
+            console.log(data);
+            var s1 = data[0];
 
-
-function refreshHourlyChart() {
-    console.log('refresh hourly chart');
-    hourlyChartStart = new Date(hourlyChartEnd.getTime() - 24*60*60000);
-    getHourlyStatAsync(hourlyChartStart, hourlyChartEnd, function(err, hourlyData) {
-        hourlySerialData = hourlyData;
-        showHourlyChart();
-    })
-}
-
-
-function showHourlyChart() {
-
-    var hourlyData = hourlySerialData;
-
-    var idx = 0;
-    // series data
-    var s1 = _.map(hourlyData, function(val){return [val.ts, val.count];});
-
-    console.log("Initial drawing chart. shall call only once.");
-
-    Highcharts.setOptions({
-        global: {
-            useUTC: false
-        }
-    });
-
-    $('#hourly-chart').highcharts({
-        chart:{
-            type: 'column',
-        },
-        title: {
-            text: '',
-            x: -20 //center
-        },
-        subtitle: {
-            text: '',
-            x: -20
-        },  
-        xAxis: {
-            type: 'datetime',
-            dateTimeLabelFormats: { // don't display the dummy year
-                month: '%e. %b',
-                year: '%b'
-            },
-        },          
-        yAxis: {
+        $('#motion-chart').highcharts('StockChart', {
+            plotOptions: {
+                    line: {
+                        connectNulls: true
+                    }
+                },
             title: {
-                text: 'Count'
+                text: '',
+                x: -20 //center
+            },
+            subtitle: {
+                text: '',
+                x: -20
+            },  
+            xAxis: {
+                type: 'datetime',
+                dateTimeLabelFormats: { // don't display the dummy year
+                    month: '%e. %b',
+                    year: '%b'
+                },
+            },          
+            yAxis: [
+                {
+                    title: {
+                        //text: '°C', 
+                        align:'high',
+                        offset: 0,
+                        rotation: 0,
+                        y: 15
+                    },
+                    min: 22,
+                    max: 29
+                }]
+            ,
+            legend: {
+                layout: 'vertical',
+                align: 'right',
+                verticalAlign: 'top',
+                borderWidth: 1,
+                floating: true,
+                x: -20
+            },
+            rangeSelector: {
+                buttons: [{
+                        count: 1,
+                        type: 'day',
+                        text: '1D'
+                    }, {
+                        count: 1,
+                        type: 'week',
+                        text: '1W'
+                    }, {
+                        type: 'all',
+                        text: 'All'
+                    }],
+                    inputEnabled: false,
+                    selected: 0
+              },
+            series: [{
+                name: 'Count',
+                type:'column',
+                data: s1
+            }],
+            tooltip:{
+                valueSuffix:''
             }
-        },
-        legend: {
-            layout: 'vertical',
-            align: 'right',
-            verticalAlign: 'top',
-            borderWidth: 1,
-            floating: true,
-            x: -10
-        },
-        series: [{
-            name: 'Motion',
-            data: s1
-        }]
-    });
+        });
+          });
+    })
 }

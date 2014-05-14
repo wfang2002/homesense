@@ -195,22 +195,32 @@ RESTstop.add(
         logger.info("Request body: ", body);
 
         var callback = query.callback;
-        var points = query.points.split(',');
+        var points = (query.points ||"").split(',');
+        var binaryPoints = (query.binary_points || "").split(',');
         var start = query.start || new Date(2014, 4, 1);
         var end = query.ed || new Date();
 
-        var type = '60';    // default hourly data
-        if (end.getTime() - start.getTime() < 24*60*60000) type = '5';  // 5 minute data
+        var interval = '60';    // default hourly data
+        if (end.getTime() - start.getTime() < 24*60*60000) interval = '5';  // 5 minute data
 
-        var results = InputsAggregated.find({device_id:query.device_id || "unknown", type:type, ts: {$gte:start.getTime(), $lte:end.getTime()}}).fetch();
+        var results = InputsAggregated.find({device_id:query.device_id || "unknown", type:interval, ts: {$gte:start.getTime(), $lte:end.getTime()}}).fetch();
 
         console.log("Found %s results", results.length);
 
         var rows = {};
         _.each(results, function(result) {
+            // append binary points
+            _.each(binaryPoints, function(pointIdx) {
+                var key = '1' + pointIdx;
+                if (!rows[key])rows[key] = [];
+                rows[key].push('[' + result.ts + ',' + result.binary_points[pointIdx] + ']')
+            }) 
+
+            //append analog points
             _.each(points, function(pointIdx) {
-                if (!rows[pointIdx])rows[pointIdx] = [];
-                rows[pointIdx].push('[' + result.ts + ',' + result.analog_points[pointIdx].avg.toFixed(1) + ']')
+                var key = '2' + pointIdx;   // add prefix '2' to avoid conflict with binary points
+                if (!rows[key])rows[key] = [];
+                rows[key].push('[' + result.ts + ',' + result.analog_points[pointIdx].avg.toFixed(1) + ']')
             }) 
         })
 

@@ -52,7 +52,7 @@ Template.placeview.placeStatus = function() {
     result.push({label: "LED", icon: "/icons/brightness-32.png", chartUrl: "#light-chart-page", value: parseInt(brightness) + "%"});
 
     var lastDetected = (input.lastChanges && input.lastChanges.binary_points) ? shortTime(input.lastChanges.binary_points[0].ts) : ""; 
-    result.push({label: "PIR", icon: "/icons/motion-64.png", value: "last detected at " + lastDetected });
+    result.push({label: "PIR", icon: "/icons/motion-64.png", chartUrl: "#motion-chart-page", value: "last detected at " + lastDetected });
 
     console.log("placeStatus=", result);
 
