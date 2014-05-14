@@ -24,16 +24,18 @@ var settings = {
 };
 
 var dimSchedule = [
-{hour: 0, brightness:[ 0,  0, 5, 0, 0, 5]},
-{hour: 5, brightness:[ 5,  0, 10, 0, 0, 10]},
-{hour: 6, brightness:[ 5,  5, 20, 0, 0, 20]},
-{hour: 7, brightness:[ 5,  5, 20, 5, 5, 20]},
-{hour: 8, brightness:[50, 50, 50, 50, 50, 50]},
-{hour: 9, brightness:[80, 80, 80, 80, 80, 80]},
-{hour:17, brightness:[60 ,60, 60, 60, 60, 60]},
-{hour:20, brightness:[30 ,30, 30, 30, 30, 30]},
-{hour:21, brightness:[10 ,10, 20, 10, 10, 20]},
-{hour:23, brightness:[ 0 , 0, 5, 0, 0, 5]}
+{hour: 0, brightness:[ 0,  0,  5,  0,  0,  5]},
+{hour: 5, brightness:[ 5,  0, 10,  0,  0, 10]},
+{hour: 6, brightness:[ 5,  5, 20,  0,  0, 20]},
+{hour: 7, brightness:[ 5,  5, 20,  5,  5, 20]},
+{hour: 8, brightness:[10, 10, 20, 10, 10, 20]},
+{hour:10, brightness:[30, 30, 30, 30, 30, 30]},
+{hour:12, brightness:[70, 70, 70, 70, 70, 70]},
+{hour:13, brightness:[80, 80, 80, 80, 80, 80]},
+{hour:14, brightness:[70, 70, 70, 70, 70, 70]},
+{hour:17, brightness:[10, 10, 20, 20, 20, 20]},
+{hour:21, brightness:[ 5,  5, 20, 10, 10, 20]},
+{hour:23, brightness:[ 0,  0,  5,  0,  0,  5]}
 ];
 
 var tempIds = [ '28-000002391385', '28-00000248a63f' ];
