@@ -69,7 +69,7 @@ function aggregateInputs(deviceId) {
     var aggStatus = SysStatus.findOne({device_id: deviceId});
 
     var filter = {device_id: deviceId};
-    var aggrVer = '1.0'
+    var aggrVer = '1.1'
     if (!aggStatus || aggStatus.version != aggrVer) {
         aggStatus = aggStatus || {device_id: deviceId};
         aggStatus.version = aggrVer;
@@ -77,8 +77,6 @@ function aggregateInputs(deviceId) {
         console.log("reset aggregate data of device: ", deviceId);
     }
     else filter.created = {$gt:aggStatus.lastTs};
-
-    aggStatus.lastTs = new Date();
 
     var inputs = InputsHistory.find(filter, {sort:{created:1}}).fetch();
 
@@ -128,6 +126,8 @@ function aggregateInputs(deviceId) {
         }
     })
 
+    aggStatus.lastTs = new Date();
+
     if (aggStatus._id) {
         var id = aggStatus._id;
         delete aggStatus._id;
@@ -139,7 +139,7 @@ function aggregateInputs(deviceId) {
 
 Meteor.methods({
     unsolicitedResponse: function(details) {
-        var ip = headers.methodClientIP(this, 1);
+        var ip = headers.methodClientIP(this);
         console.log("Client ip:  ", ip);
         //console.log("Inputs: ", details);
         details.ip = ip;
