@@ -2,15 +2,17 @@
     <div id='placeview-content' class="ui-content" data-role="content">
 
         {{#with newUpdate}}
-        <div style="float:right">updated at: {{lastUpdated}} </div>
         <div>
             <img src="{{camImg}}" style="width :100%; height:auto" />
-        </div>
-        
-
+        </div>        
         {{/with}}
 
         <ul id="place-status-list" data-role="listview">
+            <li data-role="list-divider">
+                {{#with newUpdate}}
+                <span>Updated: {{lastUpdated}}</span>
+                {{/with}}
+            </li>
             {{#each placeStatus}}
             <li data-role="fieldcontain" class="ui-li-has-icon">
                 <a href="{{chartUrl}}" data-transition="slide">
@@ -19,6 +21,7 @@
                 </a>
             </li>
             {{/each}}
+            <li data-role="list-divider"></li>
         </ul>
 
     </div>
