@@ -3,7 +3,11 @@ var deviceId = "111"; // hard-coded for now
 Template.placeview.newUpdate = function() {
      var input = Inputs.findOne({device_id: deviceId})
 
-    if (!input) return;   
+    if (!input) {
+
+        return {camImg:"/images/cam-placeholder.jpg", lastUpdated:"loading..."};   
+    }
+
 
     var result = {lastUpdated: shortTime(input.updated)};
 
@@ -32,7 +36,7 @@ Template.placeview.newUpdate = function() {
 Template.placeview.lastUpdated = function() {
     var input = Inputs.findOne({device_id: deviceId})
 
-    if (!input) return;
+    if (!input) return "loading...";
 
     return shortTime(input.updated); //input.updated.format("yyyy-MM-dd, hh:mm:ss");
 }
