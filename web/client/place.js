@@ -52,7 +52,7 @@ Template.placeview.placeStatus = function() {
 
     var result = [];
     result.push({label: "Temperature#1", icon: "/icons/temperature-64.png", chartUrl:"#analog-page", value: input.analog_points[6] + "°C"});
-    result.push({label: "Temperature#2", icon: "/icons/temperature-64.png", chartUrl: "#analog-page", value: input.analog_points[7] + "°C"});
+    //result.push({label: "Temperature#2", icon: "/icons/temperature-64.png", chartUrl: "#analog-page", value: input.analog_points[7] + "°C"});
     result.push({label: "LED", icon: "/icons/brightness-32.png", chartUrl: "#light-chart-page", value: parseInt(brightness) + "%"});
 
     var lastDetected = (input.lastChanges && input.lastChanges.binary_points) ? shortTime(input.lastChanges.binary_points[0].ts) : ""; 
