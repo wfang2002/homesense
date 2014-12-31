@@ -1,0 +1,20 @@
+<template name="kitchen">
+    <div class="page" data-role="page" id="kitchen-page" data-theme="a" data-add-back-btn="true">
+        <div data-role="header" data-position="inline">
+             <h1>Kitchen</h1>
+             <a href="#" data-role="button" data-rel="back" data-icon="arrow-l" data-direction="reverse">Back</a>
+        </div>
+            
+    <ul data-role="listview">
+        {{#each knobs}}
+        <li class="">
+            <a href="#" data-transition="slide">
+                <img id="knob-img-{{idx}}" src="/images/{{knobImg}}">
+                <h2 class="title">{{name}}</h2>
+                <p class="subtitle">{{status}}</p>
+            </a>
+        </li>
+        {{/each}}
+    </ul>
+    </div>
+</template>

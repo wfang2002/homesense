@@ -16,18 +16,24 @@
 
 <div class="page" data-role="page" id="home" data-theme="a">
     <div data-role="header" data-position="inline">
-         <h1>Fish Tank</h1>
+         <h1>Places</h1>
          
     </div>
-    {{>placeview}}
 
     <ul data-role="listview">
         <li class="">
-            <a href="#light-page" data-transition="slide">Light Control</a>
+            <a href="#fishtank-page" data-transition="slide">Fish Tank</a>
+        </li>
+        <li class="">
+            <a href="#kitchen-page" data-transition="slide">Kitchen</a>
         </li>
     </ul>
 
 </div>
+
+{{> fishtank}}
+
+{{> kitchen}}
 
 {{> lightdimmer}}
 
